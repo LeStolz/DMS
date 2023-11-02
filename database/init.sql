@@ -249,16 +249,33 @@ exec createConstraints
 
 go
 
-create or alter proc getPatientByCred(@id int) as
+create or alter proc test as 
+begin
+	print('test');
+end
+
+go 
+
+create or alter proc getUserByCred(
+	@phone nchar(10),
+	@password nvarchar(64),
+	@role nvarchar(16)
+) 
+with execute as owner
+as
 begin tran
 	begin try
-		if exists(select * from patient p where p.id = @id)
-			select * from patient p where p.id = @id
+		declare @sql nvarchar(128) = 
+			'select * from ' + @role + ' where phone = @phone and password = @password'
+
+		exec sp_executesql @sql,
+			N'@phone nchar(10), @password nvarchar(64)',
+			@phone = @phone, @password = @password
 	end try
 	begin catch
-		print error_message()
+		print error_message();
 		rollback tran
-		return
+		throw
 	end catch
 commit tran
 
@@ -273,17 +290,17 @@ create or alter proc createPatient(
 	@address nvarchar(128)
 ) as
 begin tran
---	begin try
+	begin try
 		insert into patient(name, password, phone, gender, dob, address) 
 			values (@name, @password, @phone, @gender, @dob, @address)
 
 		select * from patient where phone = @phone
---	end try
---	begin catch
---		print error_message()
---		rollback tran
---		return
---	end catch
+	end try
+	begin catch
+		print error_message();
+		rollback tran
+		throw
+	end catch
 commit tran
 
 go
@@ -315,8 +332,14 @@ begin tran
 		alter role staffs add member staffUser
 		alter role admins add member adminUser
 
-		grant exec on dbo.getPatientByCred to guests
+		grant exec on dbo.getUserByCred to guests
 		grant exec on dbo.createPatient to guests
+
+		grant exec on dbo.test to guests
+		grant exec on dbo.test to patients
+		grant exec on dbo.test to dentists
+		grant exec on dbo.test to staffs
+		grant exec on dbo.test to admins
 	end try
 	begin catch
 		print error_message()

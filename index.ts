@@ -2,9 +2,10 @@ import { config } from "dotenv";
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import usersRouter from "./routes/users/router";
-import indexRouter from "./routes/index/router";
 import { getDb } from "./dbs";
+import indexRouter from "./routes/index/router";
+import authRouter from "./routes/auth/router";
+import usersRouter from "./routes/users/router";
 
 config();
 
@@ -20,6 +21,7 @@ app.use(async (req, res, next) => {
 });
 
 app.use("/", indexRouter);
+app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 
 export default app;
