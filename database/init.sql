@@ -394,6 +394,22 @@ commit tran
 
 go
 
+create or alter proc getPatientByPhone(@phone nchar(10)) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
 create or alter proc createPatient(
 	@name nvarchar(64),
 	@password nvarchar(64),
@@ -420,8 +436,395 @@ commit tran
 
 go
 
+create or alter proc createGuestPatient(
+	@name nvarchar(64),
+	@phone nchar(10),
+	@gender nvarchar(8),
+	@dob date,
+	@address nvarchar(128)
+) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		insert into patient(name, phone, gender, dob, address)
+			values (@name, @phone, @gender, @dob, @address)
+
+		select * from patient where phone = @phone
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc createStaff as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc createDentist as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc lockUser as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getDentists as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getDentistDetails(@id uniqueidentifier) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc bookAppointment(
+	@dentistId uniqueidentifier,
+	@patientId uniqueidentifier,
+	@date date
+) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getDentistsOnShift(
+	@date date,
+	@shift nvarchar(16)
+) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc updatePatient as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getPatientDetails(@id uniqueidentifier) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc addDentistSchedule as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc removeDentistSchedule as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getDrugs as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getDrugDetails(@id uniqueidentifier) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getServices as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getServiceDetails(@id uniqueidentifier) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc createDrug as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc updateDrug as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc deleteDrug as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc addDrugBatch as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc removeDrugBatch as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc createInvoice as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
 -- Giải quyết RBTV: Mỗi đơn điều trị phải có ít nhất một dịch vụ
-create or alter proc insertTreatment(
+create or alter proc createTreatment(
+	@serviceId uniqueidentifier
+) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc addServiceToTreatment(
+	@treatmentId uniqueidentifier,
 	@serviceId uniqueidentifier
 ) as
 begin tran
@@ -505,6 +908,57 @@ begin tran
 
 		grant exec on dbo.getUserByCred to guests
 		grant exec on dbo.createPatient to guests
+		grant exec on dbo.createGuestPatient to guests
+		grant exec on dbo.getDentists to guests
+		grant exec on dbo.getDentistDetails to guests
+		grant exec on dbo.bookAppointment to guests
+		grant exec on dbo.getDentistsOnShift to guests
+		grant exec on dbo.getServices to guests
+		grant exec on dbo.getServiceDetails to guests
+
+		grant exec on dbo.getDentists to patients
+		grant exec on dbo.getDentistDetails to patients
+		grant exec on dbo.bookAppointment to patients
+		grant exec on dbo.getDentistsOnShift to patients
+		grant exec on dbo.getServices to patients
+		grant exec on dbo.getServiceDetails to patients
+		grant exec on dbo.getUserByCred to patients
+		grant exec on dbo.updatePatient to patients
+		grant exec on dbo.getPatientDetails to patients
+
+		grant exec on dbo.getPatientByPhone to dentists
+		grant exec on dbo.getPatientDetails to dentists
+		grant exec on dbo.getServices to dentists
+		grant exec on dbo.getServiceDetails to dentists
+		grant exec on dbo.getDrugs to dentists
+		grant exec on dbo.getDrugDetails to dentists
+		grant exec on dbo.createTreatment to dentists
+		grant exec on dbo.addServiceToTreatment to dentists
+		grant exec on dbo.addPrescriptionToTreatment to dentists
+		grant exec on dbo.getDentistDetails to dentists
+		grant exec on dbo.addDentistSchedule to dentists
+		grant exec on dbo.removeDentistSchedule to dentists
+
+		grant exec on dbo.createGuestPatient to staffs
+		grant exec on dbo.getPatientByPhone to staffs
+		grant exec on dbo.getDentists to staffs
+		grant exec on dbo.getDentistDetails to staffs
+		grant exec on dbo.bookAppointment to staffs
+		grant exec on dbo.getDentistsOnShift to staffs
+		grant exec on dbo.createInvoice to staffs
+		grant exec on dbo.getDrugs to staffs
+		grant exec on dbo.getDrugDetails to staffs
+
+		grant exec on dbo.getDrugs to admins
+		grant exec on dbo.getDrugDetails to admins
+		grant exec on dbo.createDrug to admins
+		grant exec on dbo.updateDrug to admins
+		grant exec on dbo.deleteDrug to admins
+		grant exec on dbo.addDrugBatch to admins
+		grant exec on dbo.removeDrugBatch to admins
+		grant exec on dbo.createStaff to admins
+		grant exec on dbo.createDentist to admins
+		grant exec on dbo.lockUser to admins
 	end try
 	begin catch
 		rollback tran;
