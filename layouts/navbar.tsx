@@ -41,7 +41,7 @@ const Navbar = ({ children }: elements.Children) => {
                 class="nav-link link-body-emphasis d-flex align-items-center gap-2"
               >
                 <i class="bi-boxes" />
-                Orders
+                Drugs
               </a>
             </li>
             <li>
