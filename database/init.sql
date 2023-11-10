@@ -13,91 +13,167 @@ begin tran
 	begin try
 		create table admin(
 			id uniqueidentifier default(newid()) primary key,
-			name nvarchar(64) not null check(len(name) > 0),
+			name nvarchar(64) not null,
 			password nvarchar(64) not null,
-			phone nchar(10) unique not null check(isnumeric(phone) = 1 and len(phone) = 10)
+			phone nchar(10) not null,
+
+			constraint [Admin name must not be empty.]
+				check(len(name) > 0),
+			constraint [Admin phone must contain only digits and have a length of 10.]
+				check(isnumeric(phone) = 1 and len(phone) = 10),
+			constraint [An admin with this phone number already exists.]
+				unique(phone)
 		)
 
 		create table staff(
 			id uniqueidentifier default(newid()) primary key,
-			name nvarchar(64) not null check(len(name) > 0),
+			name nvarchar(64) not null,
 			password nvarchar(64) not null,
-			phone nchar(10) unique not null check(isnumeric(phone) = 1 and len(phone) = 10),
-			gender nvarchar(8) check(gender is null or gender in ('male', 'female')),
-			isLocked bit not null default(0)
+			phone nchar(10) not null,
+			gender nvarchar(8) ,
+			isLocked bit not null default(0),
+
+			constraint [Staff name must not be empty.]
+				check(len(name) > 0),
+			constraint [Staff phone must contain only digits and have a length of 10.]
+				check(isnumeric(phone) = 1 and len(phone) = 10),
+			constraint [Staff gender must be null, 'male' or 'female'.]
+				check(gender is null or gender in ('male', 'female')),
+			constraint [A staff with this phone number already exists.]
+				unique(phone)
 		)
 
 		create table patient(
 			id uniqueidentifier default(newid()) primary key,
-			name nvarchar(64) not null check(len(name) > 0),
+			name nvarchar(64) not null,
 			password nvarchar(64) not null default('DMS123'),
-			phone nchar(10) unique not null check(isnumeric(phone) = 1 and len(phone) = 10),
-			gender nvarchar(8) check(gender is null or gender in ('male', 'female')),
+			phone nchar(10) not null,
+			gender nvarchar(8),
 			isLocked bit not null default(0),
-			dob date not null check(dob < getdate()),
-			address nvarchar(128) not null check(len(address) > 0),
+			dob date not null,
+			address nvarchar(128) not null,
+
+			constraint [Patient name must not be empty.]
+				check(len(name) > 0),
+			constraint [Patient phone must contain only digits and have a length of 10.]
+				check(isnumeric(phone) = 1 and len(phone) = 10),
+			constraint [Patient gender must be null, 'male' or 'female'.]
+				check(gender is null or gender in ('male', 'female')),
+			constraint [Patient DOB must be before today.]
+				check(dob < getdate()),
+			constraint [Patient address must not be empty.]
+				check(len(address) > 0),
+			constraint [A patient with this phone number already exists.]
+				unique(phone)
 		)
 
 		create table dentist(
 			id uniqueidentifier default(newid()) primary key,
-			name nvarchar(64) not null check(len(name) > 0),
+			name nvarchar(64) not null,
 			password nvarchar(64) not null,
-			phone nchar(10) unique not null check(isnumeric(phone) = 1 and len(phone) = 10),
-			gender nvarchar(8) check(gender is null or gender in ('male', 'female')),
+			phone nchar(10) not null,
+			gender nvarchar(8),
 			isLocked bit not null default(0),
+
+			constraint [Dentist name must not be empty.]
+				check(len(name) > 0),
+			constraint [Dentist phone must contain only digits and have a length of 10.]
+				check(isnumeric(phone) = 1 and len(phone) = 10),
+			constraint [Dentist gender must be null, 'male' or 'female'.]
+				check(gender is null or gender in ('male', 'female')),
+			constraint [A dentist with this phone number already exists.]
+				unique(phone)
 		)
 
 		create table dentistSchedule(
 			dentistId uniqueidentifier not null foreign key references dentist(id),
-			shift nvarchar(16) not null check(shift in ('morning', 'afternoon', 'evening')),
-			date int not null check(1 <= date and date <= 7),
-			constraint pkDentistSchedule primary key(dentistId, shift, date)
+			shift nvarchar(16) not null,
+			date int not null,
+
+			constraint [A dentist schedule of this dentist at this date and shift already exists.]
+				primary key(dentistId, shift, date),
+			constraint [Dentist schedule shift must be 'morning', 'afternoon' or 'evening'.]
+				check(shift in ('morning', 'afternoon', 'evening')),
+			constraint [Dentist schedule date must be between 1 (Sunday) and 7 (Saturday).]
+				check(1 <= date and date <= 7)
 		)
 
 		create table appointment(
 			dentistId uniqueidentifier not null foreign key references dentist(id),
 			patientId uniqueidentifier not null foreign key references patient(id),
-			shift nvarchar(16) not null check(shift in ('morning', 'afternoon', 'evening')),
-			date date not null check(getdate() < date),
-			status nvarchar(16) not null check(status in ('pending', 'confirmed', 'cancelled')),
-			constraint pkAppointment primary key(dentistId, shift, date),
-			constraint uqAppointment unique(patientId, shift, date)
+			shift nvarchar(16) not null,
+			date date not null,
+			status nvarchar(16) not null,
+
+			constraint [An appointment with this dentist at this date and shift already exists.]
+				primary key(dentistId, shift, date),
+			constraint [An appointment with this patient at this date and shift already exists.]
+				unique(patientId, shift, date),
+			constraint [Appointment shift must be 'morning', 'afternoon' or 'evening'.]
+				check(shift in ('morning', 'afternoon', 'evening')),
+			constraint [Appointment status must be 'pending', 'confirmed' or 'cancelled'.]
+				check(status in ('pending', 'confirmed', 'cancelled')),
+			constraint [Appointment date must be after today.]
+				check(getdate() < date)
 		)
 
 		create table service(
 			id uniqueidentifier default(newid()) primary key,
-			name nvarchar(64) unique not null check(len(name) > 0),
+			name nvarchar(64) not null,
 			description nvarchar(1024) not null,
-			price int not null check(price > 0)
+			price int not null,
+
+			constraint [Service name must not be empty.]
+				check(len(name) > 0),
+			constraint [A service with this name already exists.]
+				unique(name),
+			constraint [Service price must be positive.]
+				check(price > 0)
 		)
 
 		create table drug(
 			id uniqueidentifier default(newid()) primary key,
-			name nvarchar(64) unique not null check(len(name) > 0),
+			name nvarchar(64) not null,
 			directive nvarchar(512) not null,
-			price int not null check(price > 0),
-			unit nvarchar(64) not null check(len(unit) > 0),
+			price int not null,
+			unit nvarchar(64) not null,
+
+			constraint [Drug name must not be empty.]
+				check(len(name) > 0),
+			constraint [A drug with this name already exists.]
+				unique(name),
+			constraint [Drug price must be positive.]
+				check(price > 0),
+			constraint [Drug unit must not be empty.]
+				check(len(unit) > 0)
 		)
 
 		create table drugBatch(
 			drugId uniqueidentifier not null foreign key references drug(id),
 			expirationDate date not null,
-			import int not null check(import > 0),
+			import int not null,
 			isRemoved bit not null default(0),
 			stock int,
-			constraint pkDrugBatch primary key(drugId, expirationDate)
+
+			constraint [A drug batch with this drug and expiration date already exists.]
+				primary key(drugId, expirationDate),
+			constraint [Drug import must be positive.]
+				check(import > 0)
 		)
 
 		create table prescribedDrug(
 			prescriptionId uniqueidentifier not null,
 			drugId uniqueidentifier not null,
 			expirationDate date not null,
-			dosage nvarchar(64) not null check(len(dosage) > 0),
-			quantity float not null check(quantity > 0),
+			dosage nvarchar(64) not null,
+			quantity float not null,
 
-			constraint pkPrescribedDrug primary key(
-				prescriptionId, drugId, expirationDate
-			)
+			constraint [This prescription already contains the prescribed drug from this batch.]
+				primary key(prescriptionId, drugId, expirationDate),
+			constraint [Prescribed drug dosage must not be empty.]
+				check(len(dosage) > 0),
+			constraint [Prescribed drug quantity must be positive.]
+				check(quantity > 0)
 		)
 
 		alter table prescribedDrug
@@ -115,7 +191,9 @@ begin tran
 		create table treatedService(
 			treatmentId uniqueidentifier not null,
 			serviceId uniqueidentifier not null foreign key references service(id),
-			constraint pktreatedService primary key(treatmentId, serviceId)
+
+			constraint [This treatment already contains this treated service.]
+				primary key(treatmentId, serviceId)
 		)
 
 		create table treatment(
@@ -131,8 +209,13 @@ begin tran
 			notes nvarchar(64) not null,
 			toothTreated nvarchar(64) not null,
 			outcome nvarchar(16) not null,
-			treatmentCharge int not null check(treatmentCharge > 0),
-			totalServiceCharge int
+			treatmentCharge int not null,
+			totalServiceCharge int,
+
+			constraint [Treatment shift must be 'morning', 'afternoon' or 'evening'.]
+				check(shift in ('morning', 'afternoon', 'evening')),
+			constraint [Treatment charge must be positive.]
+				check(treatmentCharge > 0)
 		)
 
 		alter table treatment
@@ -180,12 +263,11 @@ create or alter function dbo._checkInvoiceOfTreatment(
 )
 returns bit as
 begin
-	declare @issueDate date
-	select @issueDate = issueDate from invoice where treatmentId = @treatmentId
-
 	if
-		@treatmentId is not null and @issueDate is not null and
-		@issueDate < (select date from treatment t where t.id = @treatmentId)
+		@treatmentId is not null and
+		(select date from treatment t where t.id = @treatmentId)
+		>
+		any(select issueDate from invoice where treatmentId = @treatmentId)
 	begin
 		return 0
 	end
@@ -295,30 +377,13 @@ end
 
 go
 
-create or alter trigger onDentistScheduleDelete
+create or alter trigger _onDentistScheduleDelete
 on dentistSchedule instead of delete as
 begin
 	set xact_abort on
 	set nocount on
 
-	if exists(
-		select * from deleted d
-		inner join dentistSchedule ds on
-			ds.dentistId = d.dentistId and
-			ds.shift = d.shift and ds.date = d.date
-		join appointment a on
-			a.dentistId = ds.dentistId and
-			datepart(dw, a.date) = ds.date and
-			a.shift = ds.shift
-	)
-	begin
-		rollback tran;
-		throw 51000, 'Schedule cannot be deleted because there exists appointments taking place on that day', 1
-	end
-
-	delete dentistSchedule from deleted d inner join dentistSchedule ds on
-		ds.dentistId = d.dentistId and
-		ds.date = d.date and ds.shift = d.shift
+	print 'Do something'
 end
 
 go
@@ -329,10 +394,18 @@ begin tran
 	set nocount on
 
 	begin try
-		alter table admin add check(dbo._checkPassword(password) = 1)
-		alter table staff add check(dbo._checkPassword(password) = 1)
-		alter table patient add check(dbo._checkPassword(password) = 1)
-		alter table dentist add check(dbo._checkPassword(password) = 1)
+		alter table admin add
+			constraint [Admin password must contain lowercases, uppercases and digits and must be at least 8 long.]
+				check(dbo._checkPassword(password) = 1)
+		alter table staff add
+			constraint [Staff password must contain lowercases, uppercases and digits and must be at least 8 long.]
+				check(dbo._checkPassword(password) = 1)
+		alter table patient add
+			constraint [Patient password must contain lowercases, uppercases and digits and must be at least 8 long.]
+				check(dbo._checkPassword(password) = 1)
+		alter table dentist add
+			constraint [Dentist password must contain lowercases, uppercases and digits and must be at least 8 long.]
+				check(dbo._checkPassword(password) = 1)
 
 		alter table invoice drop column total
 		alter table invoice
@@ -349,13 +422,23 @@ begin tran
 		alter table drugBatch drop column stock
 		alter table drugBatch
 		add stock as dbo._calculateDrugStock(drugId, expirationDate)
-		alter table prescribedDrug add check(dbo._checkDrugStock(drugId, expirationDate, quantity) = 1)
+		alter table prescribedDrug add
+			constraint [The prescribed drug is either out of stock or is removed.]
+				check(dbo._checkDrugStock(drugId, expirationDate, quantity) = 1)
 
-		alter table invoice add check(dbo._checkInvoiceOfTreatment(treatmentId, issueDate) = 1)
-		alter table treatment add check(dbo._checkInvoiceOfTreatment(id, date) = 1)
+		alter table invoice add
+			constraint [Invoice must be issued after treatment.]
+				check(dbo._checkInvoiceOfTreatment(treatmentId, issueDate) = 1)
+		alter table treatment add
+			constraint [Treatment must be issued before invoice.]
+				check(dbo._checkInvoiceOfTreatment(id, date) = 1)
 
-		alter table appointment add check(dbo._checkAppointmentTime(dentistId, shift, date, null) = 1)
-		alter table dentistSchedule add check(dbo._checkAppointmentTime(dentistId, shift, null, date) = 1)
+		alter table appointment add
+			constraint [Appointment must take place during the schedule of this dentist.]
+				check(dbo._checkAppointmentTime(dentistId, shift, date, null) = 1)
+		alter table dentistSchedule add
+			constraint [This dentist schedule is currently in use by at least one appointment.]
+				check(dbo._checkAppointmentTime(dentistId, shift, null, date) = 1)
 	end try
 	begin catch
 		rollback tran;
@@ -379,12 +462,7 @@ begin tran
 	set nocount on
 
 	begin try
-		declare @sql nvarchar(128) =
-			'select * from ' + @role + ' where phone = @phone and password = @password'
-
-		exec sp_executesql @sql,
-			N'@phone nchar(10), @password nvarchar(64)',
-			@phone = @phone, @password = @password
+		print 'Do something'
 	end try
 	begin catch
 		rollback tran;
@@ -423,10 +501,7 @@ begin tran
 	set nocount on
 
 	begin try
-		insert into patient(name, password, phone, gender, dob, address)
-			values (@name, @password, @phone, @gender, @dob, @address)
-
-		select * from patient where phone = @phone
+		print 'Do something'
 	end try
 	begin catch
 		rollback tran;
@@ -448,10 +523,7 @@ begin tran
 	set nocount on
 
 	begin try
-		insert into patient(name, phone, gender, dob, address)
-			values (@name, @phone, @gender, @dob, @address)
-
-		select * from patient where phone = @phone
+		print 'Do something'
 	end try
 	begin catch
 		rollback tran;
@@ -804,7 +876,6 @@ commit tran
 
 go
 
--- Giải quyết RBTV: Mỗi đơn điều trị phải có ít nhất một dịch vụ
 create or alter proc createTreatment(
 	@serviceId uniqueidentifier
 ) as
@@ -842,9 +913,6 @@ commit tran
 
 go
 
--- Giải quyết RBTV:
--- 1. Mỗi đơn thuốc được kê phải thuộc về một đơn điều trị hợp lệ
--- 2. Mỗi đơn thuốc có ít một loại thuốc
 create or alter proc addPrescriptionToTreatment(
 	@treatmentId uniqueidentifier,
 	@drugId uniqueidentifier,

@@ -3,6 +3,34 @@ go
 set datefirst 7
 go
 
+create or alter trigger _onDentistScheduleDelete
+on dentistSchedule instead of delete as
+begin
+	set xact_abort on
+	set nocount on
+
+	if exists(
+		select * from deleted d
+		inner join dentistSchedule ds on
+			ds.dentistId = d.dentistId and
+			ds.shift = d.shift and ds.date = d.date
+		join appointment a on
+			a.dentistId = ds.dentistId and
+			datepart(dw, a.date) = ds.date and
+			a.shift = ds.shift
+	)
+	begin
+		rollback tran;
+		throw 51000, 'This dentist schedule cannot be deleted as it is currently in use by at least one appointment.', 1
+	end
+
+	delete dentistSchedule from deleted d inner join dentistSchedule ds on
+		ds.dentistId = d.dentistId and
+		ds.date = d.date and ds.shift = d.shift
+end
+
+go
+
 create or alter proc getUserByCred(
 	@phone nchar(10),
 	@password nvarchar(64),
@@ -440,7 +468,6 @@ commit tran
 
 go
 
--- Giải quyết RBTV: Mỗi đơn điều trị phải có ít nhất một dịch vụ
 create or alter proc createTreatment(
 	@serviceId uniqueidentifier
 ) as
@@ -478,9 +505,6 @@ commit tran
 
 go
 
--- Giải quyết RBTV:
--- 1. Mỗi đơn thuốc được kê phải thuộc về một đơn điều trị hợp lệ
--- 2. Mỗi đơn thuốc có ít một loại thuốc
 create or alter proc addPrescriptionToTreatment(
 	@treatmentId uniqueidentifier,
 	@drugId uniqueidentifier,
