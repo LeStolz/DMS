@@ -1,7 +1,17 @@
-@import "./node_modules/bootstrap/scss/bootstrap";
+$primary: #3896b0;
+$secondary: #084f65;
+$danger: tomato;
+$min-contrast-ratio: 3;
 
-.card {
-  border: 0 !important;
+@import "./node_modules/bootstrap/scss/bootstrap.scss";
+
+body {
+  font-family: "Open Sans", sans-serif;
+}
+
+.datetime {
+  text-align: center;
+  font-weight: bold;
 }
 
 .position-absolute-center {
@@ -81,4 +91,116 @@
 
 .max-h-xl {
   max-height: 32rem !important;
+}
+
+.max-w-xxl {
+  max-width: 64rem !important;
+}
+
+.max-h-xxl {
+  max-height: 64rem !important;
+}
+
+.rounded {
+  border-radius: 0.25rem;
+}
+
+.rounded-md {
+  border-radius: 0.375rem;
+}
+
+.rounded-lg {
+  border-radius: 0.5rem;
+}
+
+.rounded-xl {
+  border-radius: 0.75rem;
+}
+
+img {
+  max-width: 100%;
+  vertical-align: middle;
+  border-style: none;
+}
+
+.banner {
+  background: url("https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/6362ad70723935.5bacc126e30ee.jpg");
+  background-size: cover;
+  height: 100%;
+  background-position: center;
+}
+
+.home {
+  background: url("https://images.pexels.com/photos/5355927/pexels-photo-5355927.jpeg?auto=compress&cs=tinysrgb&w=600");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+.btn-check {
+  width: 0px !important;
+  height: 0px !important;
+}
+
+.btn-check + .btn {
+  color: $gray-600 !important;
+  background-color: $gray-200 !important;
+}
+
+.btn-check:disabled + .btn {
+  color: transparent !important;
+  background-color: transparent !important;
+}
+
+.btn-check:disabled + .btn.btn-dentist {
+  color: $white !important;
+  background-color: $danger !important;
+}
+
+.btn-check:checked + .btn,
+.btn-check + .btn:hover {
+  color: $white !important;
+  background-color: $primary !important;
+}
+
+.scroll-link {
+  position: relative;
+  top: -3.5rem;
+}
+
+@media print {
+  .not-printable {
+    display: none !important;
+  }
+
+  .printable {
+    visibility: visible !important;
+    display: block !important;
+  }
+
+  .printable * {
+    visibility: visible !important;
+  }
+
+  .modal-dialog {
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  .modal-content {
+    border: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+}
+
+input:read-only:not(.form-check-input[type="radio"]):not(
+    .form-check-input[type="checkbox"]
+  ),
+textarea:read-only {
+  font-weight: bold;
+  padding-left: 0;
+  padding-right: 0;
+  border: 0;
 }

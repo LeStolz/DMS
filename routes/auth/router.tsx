@@ -2,6 +2,9 @@ import { NextFunction, Request, Response, Router } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import mssql from "mssql";
 import { DbName, getDb } from "../../dbs";
+import * as elements from "typed-html";
+import Signup from "./signup";
+import Login from "./login";
 
 const cookieOptions = {
   secure: true,
@@ -40,11 +43,13 @@ declare module "jsonwebtoken" {
   }
 }
 
-export const patient = async (
+export const getRole = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  req.db = await getDb("guest");
+
   try {
     const token = req.signedCookies.token;
     const {
@@ -69,10 +74,10 @@ export const patient = async (
     }
 
     req.user = user;
-    req.db = await getDb("patient");
+    req.db = await getDb(role);
     return next();
   } catch {
-    res.status(401).send("You have to be logged in to perform this action");
+    return next();
   }
 };
 
@@ -82,15 +87,30 @@ const role = async (
   res: Response,
   next: NextFunction
 ) => {
-  patient(req, res, async () => {
+  getRole(req, res, async () => {
     if (req.user?.role === role) {
-      req.db = await getDb(role);
       return next();
     }
 
     return res
       .status(402)
       .send("You are not authorized to perform this action");
+  });
+};
+
+export const patient = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  getRole(req, res, async () => {
+    if (req.user?.role !== "guest") {
+      return next();
+    }
+
+    return res
+      .status(401)
+      .send("You have to be logged in to perform this action");
   });
 };
 
@@ -107,6 +127,14 @@ export const dentist = async (
 ) => role("dentist", req, res, next);
 
 const authRouter = Router();
+
+authRouter.get("/signup", async (req, res) => {
+  return res.send(<Signup />);
+});
+
+authRouter.get("/login", async (req, res) => {
+  return res.send(<Login />);
+});
 
 authRouter.post("/signup", async (req, res) => {
   try {
