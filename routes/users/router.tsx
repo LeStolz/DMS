@@ -1,39 +1,26 @@
 import { Router } from "express";
 import * as elements from "typed-html";
-import { admin, dentist, patient, staff } from "../auth/router";
-import Client from "../../layouts/client/client";
-import Service from "../../layouts/room/service";
-import Dentists from "../../layouts/room/dentists";
-import Home from "../../layouts/client/home";
+import Home from "./home/home";
+import Success from "../../components/success";
+import Profile from "./profile/profile";
+import { patient } from "../auth/router";
 
 const usersRouter = Router();
 
-usersRouter.get("/guest", async (req, res) => {
-  return res.send(<Home />);
+usersRouter.get("/", async (req, res) => {
+  return res.send(<Home user={req.user} />);
 });
 
-usersRouter.get("/guest/service", async (req, res) => {
-  return res.send(<Service />);
+usersRouter.get("/profile", patient, async (req, res) => {
+  return res.send(<Profile user={req.user} />);
 });
 
-usersRouter.get("/guest/dentist", async (req, res) => {
-  return res.send(<Dentists />);
-});
-
-usersRouter.get("/patient", patient, async (req, res) => {
-  return res.send(<p>Patient</p>);
-});
-
-usersRouter.get("/dentist", dentist, async (req, res) => {
-  return res.send(<p>Dentist</p>);
-});
-
-usersRouter.get("/staff", staff, async (req, res) => {
-  return res.send(<p>Staff</p>);
-});
-
-usersRouter.get("/admin", admin, async (req, res) => {
-  return res.send(<p>Admin</p>);
+usersRouter.post("/makeAppointment", async (req, res) => {
+  return res.send(
+    <Success>
+      Your booking has been recorded. We will contact you right away.
+    </Success>
+  );
 });
 
 export default usersRouter;

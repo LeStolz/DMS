@@ -1,5 +1,7 @@
 import { randomInt } from "crypto";
 import * as elements from "typed-html";
+import ContactInfo from "../routes/users/home/contactInfo";
+import ConfirmInfo from "../routes/users/home/confirmInfo";
 
 function formatDate(date: Date) {
   const dateString = date.toLocaleString(undefined, {
@@ -24,42 +26,7 @@ const Calendar = () => {
 
   return (
     <form>
-      <div class="d-block d-md-flex justify-content-around p-3 bg-white w-100 border-bottom border-secondary">
-        <div>
-          <div class="text-center">
-            <p class={`lead mb-3`}>Please pick a Dentist</p>
-          </div>
-          <div class="d-flex justify-content-center align-items-center m-3">
-            <select
-              name="dentist"
-              id="dentistSelect"
-              class="form-select form-select-lg"
-            >
-              <option value="0">Any</option>
-              <option value="1">One</option>
-              <option value="2">Two</option>
-              <option value="3">Three</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <div class="text-center">
-            <p class={`lead mb-3`}>Please pick a Date</p>
-          </div>
-          <div class="d-flex justify-content-center align-items-center">
-            <button class="btn btn-dark icon-h-sm icon-w-sm rounded-circle">
-              <i class="bi bi-arrow-left"></i>
-            </button>
-            <div>
-              <h2 class="text-center mx-5"> {formatDate(date)} </h2>
-            </div>
-            <button class="btn btn-dark icon-h-sm icon-w-sm rounded-circle">
-              <i class="bi bi-arrow-right"></i>
-            </button>
-          </div>
-        </div>
-      </div>
+      <div class="d-block d-md-flex justify-content-around p-3 bg-white w-100 border-bottom border-secondary"></div>
       <div class="row gap-1 bg-white m-0 p-4 d-flex justify-content-center">
         <div class="d-none d-lg-block col-auto">
           <div class="row mb-1 datetime text-white">
@@ -79,14 +46,14 @@ const Calendar = () => {
             {shifts.map((shift) => (
               <div class="row mb-1">
                 <input
-                  type="radio"
+                  type="checkbox"
                   class="btn-check"
                   name="date"
                   id={`${shift}-${weekday.day}`}
-                  disabled={randomInt(0, 2) === 1}
+                  disabled={randomInt(0, 4) === 1}
                 />
                 <label
-                  class="btn icon-w-lg icon-h-lg d-flex justify-content-center align-items-center"
+                  class="btn btn-dentist icon-w-lg icon-h-lg d-flex justify-content-center align-items-center"
                   for={`${shift}-${weekday.day}`}
                 >
                   <i class="d-none d-lg-block bi bi-plus fs-2"></i>
@@ -103,23 +70,7 @@ const Calendar = () => {
           </div>
         ))}
       </div>
-      <div class="p-4 bg-white w-100 border-top border-secondary d-flex justify-content-around">
-        <button
-          type="reset"
-          class="btn btn-danger text-white fw-bold fs-5 py-2 px-5 rounded-md"
-        >
-          Clear Selection
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-primary fw-bold fs-5 py-2 px-5 rounded-md"
-          data-toggle="modal"
-          data-target="#contactInfoModal"
-        >
-          Book Now!
-        </button>
-      </div>
+      <div class="p-4 bg-white w-100 border-top border-secondary d-flex justify-content-around"></div>
     </form>
   );
 };
