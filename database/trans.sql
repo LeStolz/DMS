@@ -382,7 +382,7 @@ begin tran
 	set nocount on
 
 	begin try
-		select *
+		select name
 		from drug
 	end try
 	begin catch
@@ -426,7 +426,7 @@ begin tran
 	set nocount on
 
 	begin try
-		select *
+		select name
 		from service
 	end try
 	begin catch
@@ -643,29 +643,29 @@ go
 exec removeDrugBatch '97889C8F-844B-40BC-BD32-99312AC409C2', '2023-11-11'
 go
 
---châu
---create or alter proc removeDrugBatch as
---begin tran
---	set xact_abort on
---	set nocount on
+-- châu
+create or alter proc removeExpired as
+begin tran
+	set xact_abort on
+	set nocount on
 
---	begin try
---		update drugBatch
---		set isRemoved = 1
---		where expirationDate < CAST(GETDATE() AS DATE)
---		select *
---		from drugBatch
---	end try
---	begin catch
---		rollback tran;
---		throw
---	end catch
---commit tran
+	begin try
+		update drugBatch
+		set isRemoved = 1
+		where expirationDate < CAST(GETDATE() AS DATE)
+		select *
+		from drugBatch
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
 
---go
+go
 
---exec removeDrugBatch
---go
+exec removeDrugBatch
+go
 
 create or alter proc createInvoice as
 begin tran
@@ -700,7 +700,7 @@ go
 --commit tran
 
 --go
-
+--để riêng service, sau khi gọi tạo hồ sơ bệnh án sẽ gọi riêng một tran khác để thêm dịch vụ vào
 --châu - CHƯA TEST
 create or alter proc createTreatment(
 	@dentistId uniqueidentifier,
@@ -751,7 +751,7 @@ commit tran
 
 go
 --châu - chưa xong
-create or alter proc addPrescriptionToTreatment(
+create or alter proc addDrugToTreatment(
 	@treatmentId uniqueidentifier,
 	@drugId uniqueidentifier,
 	@expirationDate date,
