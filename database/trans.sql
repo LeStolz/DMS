@@ -585,6 +585,8 @@ go
 
 exec addDrugBatch '97889C8F-844B-40BC-BD32-99312AC409C2', '2023-11-11', 100
 go
+exec addDrugBatch '97889C8F-844B-40BC-BD32-99312AC409C2', '2024-11-11', 100
+go
 
 --t viết 3 cái remove, cái đầu là remove theo đúng nghĩa là xóa 1 dòng, cái thứ 2 (không bị comment) là remove bằng cách
 --set isRemoved, cái 3 là duyệt tất cả batch có exp date trước ngày hôm nay, và đánh dấu nó là remove hết
@@ -730,7 +732,8 @@ commit tran
 
 go
 
---châu - chưa test
+
+--châu
 create or alter proc addServiceToTreatment(
 	@treatmentId uniqueidentifier,
 	@serviceId uniqueidentifier
@@ -750,7 +753,11 @@ begin tran
 commit tran
 
 go
---châu - chưa xong
+
+addServiceToTreatment '1D9B0C3C-21CD-4BE9-9FA2-DD02D161D4F6','5EE35749-C7B4-48C8-892F-72FFA9813785'
+go
+
+--châu
 create or alter proc addDrugToTreatment(
 	@treatmentId uniqueidentifier,
 	@drugId uniqueidentifier,
@@ -763,6 +770,7 @@ begin tran
 	set nocount on
 
 	declare @presId uniqueidentifier
+	declare @tempTable table ( id uniqueidentifier )
 
 	begin try
 		select @presId = prescriptionId
@@ -771,10 +779,11 @@ begin tran
 
 		if @presId is null
 		begin
-			insert into prescription(total)
-			values (0);
+			insert into prescription
+			output inserted.id into @tempTable
+			default values
 
-			set @presId = SCOPE_IDENTITY()
+			select @presId = id from @tempTable
 
 			update treatment
 			set prescriptionId = @presId
@@ -789,3 +798,5 @@ begin tran
 commit tran
 
 go
+
+addDrugToTreatment 'ADB9BCC1-E0AC-4C5F-8568-A447F606383C', '97889C8F-844B-40BC-BD32-99312AC409C2', '2024-11-11', '1 pill after dinner', 10
