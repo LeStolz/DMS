@@ -173,28 +173,37 @@ commit tran
 
 go
 
---châu
+--châu untested
 create or alter proc lockUser(
-	@phone nchar(10)
+	@phone nchar(10),
+	@type int
 ) as
 begin tran
 	set xact_abort on
 	set nocount on
 
 	begin try
-		update Patient
-		set isLocked = 1
-		where phone = @phone
-		update Dentist
-		set isLocked = 1
-		where phone = @phone
-		update Staff
-		set isLocked = 1
-		where phone = @phone
-
-		select * from patient where phone = @phone
-		select * from dentist where phone = @phone
-		select * from staff where phone = @phone
+		if (@type = 1)
+		begin
+			update Patient
+			set isLocked = 1
+			where phone = @phone
+			select * from patient where phone = @phone
+		end;
+		else if (@type = 2)
+		begin
+			update Dentist
+			set isLocked = 1
+			where phone = @phone
+			select * from dentist where phone = @phone
+		end;
+		else if (@type = 3)
+		begin
+			update Staff
+			set isLocked = 1
+			where phone = @phone
+			select * from staff where phone = @phone
+		end;
 	end try
 	begin catch
 		rollback tran;
@@ -691,13 +700,6 @@ go
 --commit tran
 
 --go
-
---t thấy service nên để riêng, tạo treatment rồi mới thêm service vô? chứ đã có proc add service vào treatment
---ở dưới rồi thì ở create treatment đâu cần service id? (mà có thể dùng nhiều service nên cũng đâu lưu vào được
---nếu t có sai thì code gốc t comment ở trên nha - Châu
---vấn đề service - treatedService - treatment, treatedService cần treatmentId, mà createTreatment cần duyệt danh sách
---service đã sử dụng? -> t tạm làm là không update cái đó, rồi nếu định xử lý cái đó backend hay sao thì tính nha
---tương tự t cũng không thêm prescription trong createTreatment nha
 
 --châu - CHƯA TEST
 create or alter proc createTreatment(
