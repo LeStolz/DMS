@@ -30,7 +30,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
-      db: mssql.Request;
+      db: () => Promise<mssql.Request>;
     }
   }
 }
@@ -48,7 +48,7 @@ export const getRole = async (
   res: Response,
   next: NextFunction
 ) => {
-  req.db = await getDb("guest");
+  req.db = async () => await getDb("guest");
 
   try {
     const token = req.signedCookies.token;
@@ -60,12 +60,12 @@ export const getRole = async (
 
     const user: User = {
       ...(
-        await req.db
+        await (await req.db())
           .input("phone", phone)
           .input("password", password)
           .input("role", role)
           .execute("getUserByCred")
-      ).recordset[0],
+      ).recordset?.[0],
       role,
     };
 
@@ -74,7 +74,7 @@ export const getRole = async (
     }
 
     req.user = user;
-    req.db = await getDb(role);
+    req.db = async () => await getDb(role);
     return next();
   } catch {
     return next();
@@ -94,7 +94,7 @@ const role = async (
 
     return res
       .status(402)
-      .send("You are not authorized to perform this action");
+      .send("You are not authorized to perform this action.");
   });
 };
 
@@ -110,7 +110,7 @@ export const patient = async (
 
     return res
       .status(401)
-      .send("You have to be logged in to perform this action");
+      .send("You have to be logged in to perform this action.");
   });
 };
 
@@ -141,8 +141,8 @@ authRouter.post("/signup", async (req, res) => {
     const input = req.body;
     const user: User = {
       ...(
-        await req.db
-          .input("name", input.name)
+        await (await req.db())
+          .input("name", `${input.lastName} ${input.firstName}`)
           .input("password", input.password)
           .input("phone", input.phone)
           .input("gender", input.gender)
@@ -162,14 +162,16 @@ authRouter.post("/signup", async (req, res) => {
       cookieOptions
     );
 
-    return res.json({ ...user, password: undefined });
+    return res
+      .header("HX-Redirect", "/users")
+      .json({ ...user, password: undefined });
   } catch (error: any) {
     if (error instanceof Error) {
       console.error(error.message);
-      return res.status(400).send(error.message);
+      return res.status(400).send(error.message.split("'.")[0].split("'")[1]);
     }
 
-    return res.status(500).send("Signup failed. Please try again later");
+    return res.status(500).send("Signup failed. Please try again later.");
   }
 });
 
@@ -179,17 +181,17 @@ authRouter.post("/login", async (req, res) => {
 
     const user: User = {
       ...(
-        await req.db
+        await (await req.db())
           .input("phone", phone)
           .input("password", password)
           .input("role", role)
           .execute("getUserByCred")
-      ).recordset[0],
+      ).recordset?.[0],
       role,
     };
 
     if (phone == null || password == null || user == null || user.id == null) {
-      return res.status(401).send("Phone and password do not match");
+      return res.status(401).send("Phone and password do not match.");
     }
 
     res.cookie(
@@ -201,19 +203,21 @@ authRouter.post("/login", async (req, res) => {
       cookieOptions
     );
 
-    return res.json({ ...user, password: undefined });
+    return res
+      .header("HX-Redirect", "/users")
+      .json({ ...user, password: undefined });
   } catch (error: any) {
     if (error instanceof Error) {
       console.error(error.message);
-      return res.status(400).send(error.message);
+      return res.status(400).send(error.message.split("'.")[0].split("'")[1]);
     }
 
-    return res.status(500).send("Signup failed. Please try again later");
+    return res.status(500).send("Login failed. Please try again later.");
   }
 });
 
 authRouter.get("/logout", patient, async (req, res) => {
-  return res.clearCookie("token").end();
+  return res.clearCookie("token").header("HX-Redirect", "/users").end();
 });
 
 export default authRouter;

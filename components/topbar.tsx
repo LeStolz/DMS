@@ -88,8 +88,8 @@ const Topbar = ({ children, user }: elements.Children & { user?: User }) => {
                     <a
                       role="button"
                       class="btn btn-primary me-3"
-                      href="/auth/login"
                       hx-get="/auth/logout"
+                      hx-swap="none"
                     >
                       Logout
                     </a>
