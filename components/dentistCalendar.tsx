@@ -1,7 +1,5 @@
 import { randomInt } from "crypto";
 import * as elements from "typed-html";
-import ContactInfo from "../routes/users/home/contactInfo";
-import ConfirmInfo from "../routes/users/home/confirmInfo";
 
 function formatDate(date: Date) {
   const dateString = date.toLocaleString(undefined, {
@@ -18,10 +16,15 @@ const Calendar = () => {
 
   const shifts = ["Morning", "Afternoon", "Evening"];
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-    (day, idx) => ({
-      day,
-      date: new Date(date.getDate() + idx),
-    })
+    (day, idx) => {
+      const weekdayDate = new Date();
+      weekdayDate.setDate(date.getDate() + idx);
+
+      return {
+        day,
+        date: weekdayDate,
+      };
+    }
   );
 
   return (
@@ -53,7 +56,7 @@ const Calendar = () => {
                   disabled={randomInt(0, 4) === 1}
                 />
                 <label
-                  class="btn btn-dentist icon-w-lg icon-h-lg d-flex justify-content-center align-items-center"
+                  class="btn btn-dentist icon-w-lg icon-h-lg position-relative d-flex justify-content-center align-items-center"
                   for={`${shift}-${weekday.day}`}
                 >
                   <i class="d-none d-lg-block bi bi-plus fs-2"></i>
@@ -64,6 +67,9 @@ const Calendar = () => {
                   ) : (
                     <i class="d-block d-lg-none bi bi-sunset fs-2"></i>
                   )}
+                  <span class="position-absolute bottom-0 end-0 me-1">
+                    {weekday.date.getDate()}
+                  </span>
                 </label>
               </div>
             ))}

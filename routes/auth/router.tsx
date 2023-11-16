@@ -5,6 +5,8 @@ import { DbName, getDb } from "../../dbs";
 import * as elements from "typed-html";
 import Signup from "./signup";
 import Login from "./login";
+import Warning from "../../components/warning";
+import Topbar from "../../components/topbar";
 
 const cookieOptions = {
   secure: true,
@@ -69,7 +71,13 @@ export const getRole = async (
       role,
     };
 
-    if (phone == null || password == null || user == null || user.id == null) {
+    if (
+      phone == null ||
+      password == null ||
+      user == null ||
+      user.id == null ||
+      user.isLocked
+    ) {
       throw null;
     }
 
@@ -92,9 +100,13 @@ const role = async (
       return next();
     }
 
-    return res
-      .status(402)
-      .send("You are not authorized to perform this action.");
+    return res.status(402).send(
+      <Topbar user={req.user}>
+        <Warning fullscreen>
+          You are not authorized to perform this action.
+        </Warning>
+      </Topbar>
+    );
   });
 };
 
@@ -108,9 +120,13 @@ export const patient = async (
       return next();
     }
 
-    return res
-      .status(401)
-      .send("You have to be logged in to perform this action.");
+    return res.status(401).send(
+      <Topbar user={req.user}>
+        <Warning fullscreen>
+          You have to be logged in to perform this action.
+        </Warning>
+      </Topbar>
+    );
   });
 };
 
@@ -190,7 +206,17 @@ authRouter.post("/login", async (req, res) => {
       role,
     };
 
-    if (phone == null || password == null || user == null || user.id == null) {
+    if (user.isLocked) {
+      return res.status(401).send("This account has been locked.");
+    }
+
+    if (
+      phone == null ||
+      password == null ||
+      user == null ||
+      user.id == null ||
+      user.isLocked
+    ) {
       return res.status(401).send("Phone and password do not match.");
     }
 
