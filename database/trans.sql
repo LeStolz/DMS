@@ -51,8 +51,8 @@ begin tran
 			@phone = @phone, @password = @password
 	end try
 	begin catch
-		if @@TRANCOUNT > 0
       rollback tran;
+		rollback tran;
 		throw
 	end catch
 commit tran
@@ -140,7 +140,7 @@ begin tran
 		end
 
 		declare @password nvarchar(64) = 'guestdms@123'
-		insert into patient(name, password, phone, gender, dob address)
+		insert into patient(name, password, phone, gender, dob, address)
 		values (@name, @password, @phone, @gender, @dob, @address)
 
 		select name, phone, gender, dob, address from patient where phone = @phone
@@ -282,7 +282,7 @@ begin tran
 		if not exists (
 			select 1 
 			from DENTISTSCHEDULE 
-			where dentistId = @dentistId and shift = @shift and date = datepart(weekday, @date) - 2
+			where dentistId = @dentistId and shift = @shift and date = datepart(dw, @date)
 		)
 		begin 
 			rollback tran;
@@ -406,17 +406,19 @@ begin tran
 			throw 51000, 'This patient does not have any appointments.', 1
 		end
 
-		select  dentist.name, t.shift, t.date, t.symptoms, t.notes, t.toothTreated, t.outcome,
-						drug.name, pd.dosage, pd.quantity,  s.name, s.description  
-		from APPOINTMENT a	
+		select p.name, p.dob, p.phone, p.gender, p.address,
+		 				dentist.name, t.shift, t.date, t.symptoms, t.notes, t.toothTreated, t.outcome,
+						drug.name, pd.dosage, pd.quantity, s.name, s.description  
+		from PATIENT p 
+		join APPOINTMENT a on a.patientId = p.id
 		join TREATMENT t on t.dentistId = a.dentistId and t.shift = a.shift and t.date = a.date 
 		join DENTIST dentist on dentist.id = t.dentistId 
-		join PRESCRIPTION p on p.id = t.prescriptionId
-		join PRESCRIBEDDRUG pd on pd.prescriptionId = p.id
+		join PRESCRIPTION pres on pres.id = t.prescriptionId
+		join PRESCRIBEDDRUG pd on pd.prescriptionId = pres.id
 		join DRUG drug on drug.id = pd.drugId
 		join TREATEDSERVICE ts on ts.treatmentId = t.id  
-		join SERVICE s on s.id = ts.serviceId 
-		where a.patientId = @id 
+		join SERVICE s on s.id = ts.serviceId
+		where p.id = @id 
 
 	end try
 	begin catch
@@ -478,19 +480,19 @@ commit tran
 
 go
 
-create or alter proc getDrugDetails(@id uniqueidentifier) as
+create or alter proc getDrugDetails(@name uniqueidentifier) as
 begin tran
 	set xact_abort on
 	set nocount on
 
 	begin try
-		if @id is null
+		if @name is null
 		begin 
 			rollback tran;
-			throw 51000, 'ID cannot be null.', 1
+			throw 51000, 'Name cannot be null.', 1
 		end
 	
-		if not exists (select 1 from drug where id = @id) 
+		if not exists (select 1 from drug where name = @name) 
 		begin 
 			rollback tran;
 			throw 51000, 'This drug does not exist in the database.', 1
@@ -498,7 +500,7 @@ begin tran
 
 		select id, name, price, unit, directive, db.stock, db.expirationDate 
 		from DRUG d join DRUGBATCH db on drugId = id 
-		where d.id = @id 
+		where d.name = @name
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
@@ -514,7 +516,7 @@ begin tran
 	set nocount on
 
 	begin try
-		select * from SERVICE
+		select id, name from SERVICE
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
@@ -679,7 +681,7 @@ begin tran
 
 	insert into INVOICE (treatmentId, issueDate) values (@treatmentId, GETDATE())
 
-	select t.treatmentCharge, t.totalServiceCharge, p.total as totalDrugCharge, i.total as totalInvoiceCharge
+	select t.treatmentCharge, t.totalServiceCharge, p.total as totalDrugCharge, i.total as totalInvoiceCharge, i.issueDate
 	from TREATMENT t 
 	left join PRESCRIPTION p on p.id = t.prescriptionId 
 	join INVOICE i on i.treatmentId = t.id
