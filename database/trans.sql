@@ -52,7 +52,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
@@ -65,6 +65,12 @@ begin tran
 	set nocount on
 
 	begin try
+		if @phone is null 
+		begin 
+			rollback tran;
+			throw 51000, 'Phone number cannot be null.', 1
+		end
+
 		if not exists (select 1 from PATIENT where phone = @phone) 
 		begin 
 			rollback tran;
@@ -75,7 +81,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
@@ -95,6 +101,12 @@ begin tran
 	set nocount on
 
 	begin try
+		if @name is null or @password is null or @phone is null or @gender is null or @dob is null or @address is null
+		begin 
+			rollback tran;
+			throw 51000, 'Input cannot be null.', 1
+		end
+
 		insert into patient(name, password, phone, gender, dob, address)
 			values (@name, @password, @phone, @gender, @dob, @address)
 
@@ -102,7 +114,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
@@ -121,15 +133,21 @@ begin tran
 	set nocount on
 
 	begin try
+		if @name is null or @phone is null or @gender is null or @dob is null or @address is null
+		begin 
+			rollback tran;
+			throw 51000, 'Input cannot be null.', 1
+		end
+
 		declare @password nvarchar(64) = 'guestdms@123'
-		insert into patient(name, password, phone, gender, dob, address)
+		insert into patient(name, password, phone, gender, dob address)
 		values (@name, @password, @phone, @gender, @dob, @address)
 
 		select name, phone, gender, dob, address from patient where phone = @phone
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
@@ -146,7 +164,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+        rollback tran;
 		throw
 	end catch
 commit tran
@@ -207,19 +225,25 @@ begin tran
 	set nocount on
 
 	begin try
-			if not exists (select 1 from dentist where id = @id)
-			begin 
-				rollback tran;
-				throw 51000, 'This dentist does not exist in the database.', 1;
-			end
+		if @id is null 
+		begin 
+			rollback tran;
+			throw 51000, 'ID cannot be null.', 1
+		end
+		
+		if not exists (select 1 from dentist where id = @id)
+		begin 
+			rollback tran;
+			throw 51000, 'This dentist does not exist in the database.', 1;
+		end
 
-			select id, name, phone, gender, shift, date
-			from DENTIST join DENTISTSCHEDULE on id = dentistId
-			where id = @id
+		select id, name, phone, gender, shift, date
+		from DENTIST join DENTISTSCHEDULE on id = dentistId
+		where id = @id
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+       rollback tran;
 		throw
 	end catch
 commit tran
@@ -237,6 +261,12 @@ begin tran
 	set nocount on
 
 	begin try
+		if @dentistId is null or @patientId is null or @shift is null or @date is null 
+		begin 
+			rollback tran;
+			throw 51000, 'Input cannot be null.', 1
+		end
+
 		if not exists (select 1 from PATIENT where id = @patientId) 
 		begin 
 			rollback tran;
@@ -270,7 +300,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
@@ -286,6 +316,12 @@ begin tran
 	set nocount on
 
 	begin try
+		if @date is null or @shift is null
+		begin 
+			rollback tran;
+			throw 51000, 'Input cannot be null.', 1
+		end
+
 		if not exists (
 			select 1 
 			from DENTIST join DENTISTSCHEDULE on id = dentistId
@@ -302,7 +338,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
@@ -321,6 +357,12 @@ begin tran
 	set nocount on
 
 	begin try
+		if @id is null or @name is null or @gender is null or @dob is null or @address is null
+		begin 
+			rollback tran;
+			throw 51000, 'Input cannot be null.', 1
+		end
+	
 		if not exists (select 1 from PATIENT where id = @id)
 		begin 
 			rollback tran;
@@ -330,14 +372,10 @@ begin tran
 		update PATIENT
 		set name = @name, gender = @gender, dob = @dob, address = @address 
 		where id = @id 
-
-		select name, phone, gender, dob, address  
-		from patient 
-		where id = @id 
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-      rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
@@ -350,6 +388,12 @@ begin tran
 	set nocount on
 
 	begin try
+		if @id is null
+		begin 
+			rollback tran;
+			throw 51000, 'ID cannot be null.', 1
+		end
+
 		if not exists (select 1 from PATIENT where id = @id)
 		begin 
 			rollback tran;
@@ -377,7 +421,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
@@ -427,7 +471,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+        rollback tran;
 		throw
 	end catch
 commit tran
@@ -440,6 +484,12 @@ begin tran
 	set nocount on
 
 	begin try
+		if @id is null
+		begin 
+			rollback tran;
+			throw 51000, 'ID cannot be null.', 1
+		end
+	
 		if not exists (select 1 from drug where id = @id) 
 		begin 
 			rollback tran;
@@ -452,7 +502,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+        rollback tran;
 		throw
 	end catch
 commit tran
@@ -468,7 +518,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-      		rollback;
+      	rollback tran;
 		throw
 	end catch
 commit tran
@@ -481,6 +531,12 @@ begin tran
 	set nocount on
 
 	begin try
+		if @id is null
+		begin 
+			rollback tran;
+			throw 51000, 'ID cannot be null.', 1
+		end
+
 		if not exists (select 1 from SERVICE where id = @id)
 		begin 
 			rollback tran;
@@ -491,7 +547,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-      rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
@@ -588,6 +644,12 @@ begin tran
 	set nocount on
 
 	begin try
+		if @patientId is null or @shift is null or @date is null
+		begin 
+			rollback tran;
+			throw 51000, 'Input cannot be null.', 1
+		end
+
 		if not exists (
 			select 1 from APPOINTMENT where patientId = @patientId and shift = @shift and date = @date
 		)
@@ -626,7 +688,7 @@ begin tran
 	end try
 	begin catch
 		if @@TRANCOUNT > 0
-            rollback;
+      rollback tran;
 		throw
 	end catch
 commit tran
