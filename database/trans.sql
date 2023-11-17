@@ -51,7 +51,6 @@ begin tran
 			@phone = @phone, @password = @password
 	end try
 	begin catch
-      rollback tran;
 		rollback tran;
 		throw
 	end catch
