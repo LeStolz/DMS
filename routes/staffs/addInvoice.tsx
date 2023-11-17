@@ -252,7 +252,7 @@ const AddInvoice = () => {
   return (
     <div class="d-flex flex-column px-5 not-printable">
       <div class="py-5 w-100">
-        <h1>Treatment History</h1>
+        <h1>Bob's treatment History</h1>
         <div class="accordion w-100" id="treatmentsAccordion">
           {[1, 2, 3, 4, 5].map((_, idx) => (
             <div class="accordion-item">

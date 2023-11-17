@@ -124,19 +124,7 @@ const DrugInfoModal = ({ scrud = false }: { scrud?: boolean }) => {
                       ["13", "24/12/2023"],
                     ].map((drug) => (
                       <tr>
-                        <td>
-                          {scrud === true ? (
-                            <input
-                              type="number"
-                              class="form-control w-auto"
-                              name="stock"
-                              id="stock"
-                              value={drug[0]}
-                            />
-                          ) : (
-                            drug[0]
-                          )}
-                        </td>
+                        <td>{drug[0]}</td>
                         <td>{drug[1]}</td>
                         {scrud === true ? (
                           <td>
