@@ -75,60 +75,59 @@ commit tran
 
 go
 
---create or alter proc createPatient(
---	@name nvarchar(64),
---	@password nvarchar(64),
---	@phone nchar(10),
---	@gender nvarchar(8),
---	@dob date,
---	@address nvarchar(128)
---) as
---begin tran
---	set xact_abort on
---	set nocount on
+create or alter proc createPatient(
+	@name nvarchar(64),
+	@password nvarchar(64),
+	@phone nchar(10),
+	@gender nvarchar(8),
+	@dob date,
+	@address nvarchar(128)
+) as
+begin tran
+	set xact_abort on
+	set nocount on
 
---	begin try
---		insert into patient(name, password, phone, gender, dob, address)
---			values (@name, @password, @phone, @gender, @dob, @address)
+	begin try
+		insert into patient(name, password, phone, gender, dob, address)
+			values (@name, @password, @phone, @gender, @dob, @address)
 
---		select * from patient where phone = @phone
---	end try
---	begin catch
---		if @@TRANCOUNT > 0
---		rollback tran;
---		throw
---	end catch
---commit tran
+		select * from patient where phone = @phone
+	end try
+	begin catch
+		if @@TRANCOUNT > 0
+		rollback tran;
+		throw
+	end catch
+commit tran
 
---go
+go
 
---create or alter proc createGuestPatient(
---	@name nvarchar(64),
---	@phone nchar(10),
---	@gender nvarchar(8),
---	@dob date,
---	@address nvarchar(128)
---) as
---begin tran
---	set xact_abort on
---	set nocount on
+create or alter proc createGuestPatient(
+	@name nvarchar(64),
+	@phone nchar(10),
+	@gender nvarchar(8),
+	@dob date,
+	@address nvarchar(128)
+) as
+begin tran
+	set xact_abort on
+	set nocount on
 
---	begin try
---		insert into patient(name, phone, gender, dob, address)
---			values (@name, @phone, @gender, @dob, @address)
+	begin try
+		insert into patient(name, phone, gender, dob, address)
+			values (@name, @phone, @gender, @dob, @address)
 
---		select * from patient where phone = @phone
---	end try
---	begin catch
---		if @@TRANCOUNT > 0
---		rollback tran;
---		throw
---	end catch
---commit tran
+		select * from patient where phone = @phone
+	end try
+	begin catch
+		if @@TRANCOUNT > 0
+		rollback tran;
+		throw
+	end catch
+commit tran
 
---go
+go
 
---châu
 create or alter proc createStaff(
 	@name nvarchar(64),
 	@password nvarchar(64),
@@ -158,7 +157,6 @@ commit tran
 
 go
 
---châu
 create or alter proc createDentist (
 	@name nvarchar(64),
 	@password nvarchar(64),
@@ -187,7 +185,6 @@ commit tran
 
 go
 
---châu unfinished
 create or alter proc lockUser(
 	@phone nchar(10),
 	@type int
@@ -249,7 +246,6 @@ commit tran
 
 go
 
---châu
 create or alter proc getDentistDetails(@id uniqueidentifier) as
 begin tran
 	set xact_abort on
@@ -303,7 +299,6 @@ commit tran
 
 go
 
---châu
 create or alter proc getDentistsOnShift(
 	@date date,
 	@shift nvarchar(16)
@@ -372,10 +367,9 @@ commit tran
 
 go
 
---châu
 create or alter proc addDentistSchedule(
-	@id uniqueidentifier, 
-	@date int, 
+	@id uniqueidentifier,
+	@date int,
 	@shift nvarchar(16)
 ) as
 begin tran
@@ -410,8 +404,8 @@ exec addDentistSchedule @id = '737ECD2F-E49A-48D1-A8CF-DED2BA17FC43', @date = 1,
 go
 
 create or alter proc removeDentistSchedule(
-	@id uniqueidentifier, 
-	@date int, 
+	@id uniqueidentifier,
+	@date int,
 	@shift nvarchar(16)
 ) as
 begin tran
@@ -434,7 +428,7 @@ begin tran
 			rollback tran;
 			throw 51000, 'No such schedule exists in the database.',1
 		end
-		delete from dentistSchedule 
+		delete from dentistSchedule
 		where dentistId = @id and [date] = @date and [shift] = @shift
 		select *
 		from dentistSchedule
@@ -456,7 +450,6 @@ select @id = id from dentist where name = N'Trần Ngọc Diễm Châu'
 exec removeDentistSchedule @id, @date = 2, @shift = 'afternoon';
 go
 
--- châu TEST
 create or alter proc getDrugs as
 begin tran
 	set xact_abort on
@@ -473,7 +466,7 @@ begin tran
 		left join (select drugId, expirationDate, stock
 					from drugBatch db
 					where db.isRemoved = 0 and db.expirationDate = (select min(expirationDate) from drugBatch as db2
-												where db2.drugId = db.drugId)) db 
+												where db2.drugId = db.drugId)) db
 		on db.drugId = d.id
 	end try
 	begin catch
@@ -509,7 +502,7 @@ begin tran
 		left join (select drugId, expirationDate, stock
 					from drugBatch db
 					where db.isRemoved = 0 and db.expirationDate = (select min(expirationDate) from drugBatch as db2
-												where db2.drugId = db.drugId)) db 
+												where db2.drugId = db.drugId)) db
 		on db.drugId = d.id
 		where d.name = @name
 	end try
@@ -525,7 +518,6 @@ go
 exec getDrugDetails 'Ibuprofen';
 go
 
---châu
 create or alter proc getServices as
 begin tran
 	set xact_abort on
@@ -551,7 +543,6 @@ go
 exec getServices
 go
 
---châu
 create or alter proc getServiceDetails(@id uniqueidentifier) as
 begin tran
 	set xact_abort on
@@ -584,7 +575,6 @@ go
 exec getServiceDetails '83EFABD4-5C5C-4687-BD95-4E506212900D'
 go
 
---châu
 create or alter proc createDrug(
 		@name nvarchar(64),
 		@directive nvarchar(512),
@@ -616,7 +606,6 @@ go
 exec createDrug 'Acetaminophen', 'Used for the treatment of mild to moderate pain and reduction of fever. It is available over the counter in various forms, the most common being oral forms.', 100, 'tablet (500mg)'
 go
 
---châu
 create or alter proc updateDrug(
 		@id uniqueidentifier,
 		@name nvarchar(64),
@@ -658,39 +647,37 @@ go
 exec updateDrug 'DB1ED0FD-84A2-4B1A-B873-24AC98B37AAA', 'Acetaminophen', 'Used for the treatment of mild to moderate pain and reduction of fever. It is available over the counter in various forms, the most common being oral forms.', 10000, 'tablet (500mg)'
 go
 
---t không biết nên để input của delete drug là tên hay id nên t để cái dùng tên trong comment
---create or alter proc deleteDrug(
---		@name nvarchar(64)
---) as
---begin tran
---	set xact_abort on
---	set nocount on
+create or alter proc deleteDrug(
+		@name nvarchar(64)
+) as
+begin tran
+	set xact_abort on
+	set nocount on
 
---	begin try
-		--if (@id is null)
-		--begin
-		--	rollback tran;
-		--	throw 51000, 'Input cannot be empty.', 1
-		--end
-		--if not exists(select 1 from drug where id = @id)
-		--begin
-		--	rollback tran;
-		--	throw 51000, 'No such drug exists in the database.', 1
-		--end
---		declare @id uniqueidentifier
---		select @id = id from drug where name = @name
---		delete from drug where id = @id
---	end try
---	begin catch
-	--if @@TRANCOUNT > 0
---		rollback tran;
---		throw
---	end catch
---commit tran
+	begin try
+		if (@id is null)
+		begin
+			rollback tran;
+			throw 51000, 'Input cannot be empty.', 1
+		end
+		if not exists(select 1 from drug where id = @id)
+		begin
+			rollback tran;
+			throw 51000, 'No such drug exists in the database.', 1
+		end
+		declare @id uniqueidentifier
+		select @id = id from drug where name = @name
+		delete from drug where id = @id
+	end try
+	begin catch
+	if @@TRANCOUNT > 0
+		rollback tran;
+		throw
+	end catch
+commit tran
 
---go
+go
 
---châu
 create or alter proc deleteDrug(
 	@id uniqueidentifier
 ) as
@@ -724,7 +711,6 @@ go
 exec deleteDrug 'DB1ED0FD-84A2-4B1A-B873-24AC98B37AAA';
 go
 
---châu
 create or alter proc addDrugBatch(
 	@drugId uniqueidentifier,
 	@exp date,
@@ -776,52 +762,46 @@ go
 exec addDrugBatch 'FD77D9E9-98B9-40FF-BDC6-9061045DB88E', '2024-11-30', 100
 go
 
---t viết 3 cái remove, cái đầu là remove theo đúng nghĩa là xóa 1 dòng, cái thứ 2 (không bị comment) là remove bằng cách
---set isRemoved, cái 3 là duyệt tất cả batch có exp date trước ngày hôm nay, và đánh dấu nó là remove hết
---theo đúng thứ tự từ trên xuống dưới từ comment này - châu
+create or alter proc removeDrugBatch(
+	@drugId uniqueidentifier,
+	@exp date
+) as
+begin tran
+	set xact_abort on
+	set nocount on
 
---châu
---create or alter proc removeDrugBatch(
---	@drugId uniqueidentifier,
---	@exp date
---) as
---begin tran
---	set xact_abort on
---	set nocount on
+	begin try
+		if (@drugId is null or @exp is null)
+		begin
+			rollback tran;
+			throw 51000, 'Input cannot be empty.', 1
+		end
+		if not exists(select 1 from drug where id = @drugId)
+		begin
+			rollback tran;
+			throw 51000, 'No such drug exists in the database.', 1
+		end
+		if not exists(select 1 from drugBatch where drugId = @drugId and expirationDate = @exp and isRemoved = 0)
+		begin
+			rollback tran;
+			throw 51000, 'No such drug batch exists in the database.', 1;
+		end
+		delete from drugBatch
+		where drugId = @drugId and expirationDate = @exp
+		select * from drugBatch where drugId = @drugId
+	end try
+	begin catch
+	if @@TRANCOUNT > 0
+		rollback tran;
+		throw
+	end catch
+commit tran
 
---	begin try
-		--if (@drugId is null or @exp is null)
-		--begin
-		--	rollback tran;
-		--	throw 51000, 'Input cannot be empty.', 1
-		--end
-		--if not exists(select 1 from drug where id = @drugId)
-		--begin
-		--	rollback tran;
-		--	throw 51000, 'No such drug exists in the database.', 1
-		--end
-		--if not exists(select 1 from drugBatch where drugId = @drugId and expirationDate = @exp and isRemoved = 0)
-		--begin
-		--	rollback tran;
-		--	throw 51000, 'No such drug batch exists in the database.', 1;
-		--end
---		delete from drugBatch
---		where drugId = @drugId and expirationDate = @exp
---		select * from drugBatch where drugId = @drugId
---	end try
---	begin catch
-	--if @@TRANCOUNT > 0
---		rollback tran;
---		throw
---	end catch
---commit tran
+go
 
---go
+exec removeDrugBatch '97889C8F-844B-40BC-BD32-99312AC409C2', '2023-11-11'
+go
 
---exec removeDrugBatch '97889C8F-844B-40BC-BD32-99312AC409C2', '2023-11-11'
---go
-
---châu
 create or alter proc removeDrugBatch(
 	@drugId uniqueidentifier,
 	@exp date
@@ -865,7 +845,6 @@ go
 exec removeDrugBatch '97889C8F-844B-40BC-BD32-99312AC409C2', '2023-11-11'
 go
 
--- châu
 create or alter proc removeExpired as
 begin tran
 	set xact_abort on
@@ -912,25 +891,24 @@ commit tran
 
 go
 
---create or alter proc createTreatment(
---	@serviceId uniqueidentifier
---) as
---begin tran
---	set xact_abort on
---	set nocount on
+create or alter proc createTreatment(
+	@serviceId uniqueidentifier
+) as
+begin tran
+	set xact_abort on
+	set nocount on
 
---	begin try
---		print 'Do something'
---	end try
---	begin catch
---		rollback tran;
---		throw
---	end catch
---commit tran
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		rollback tran;
+		throw
+	end catch
+commit tran
 
---go
---để riêng service, sau khi gọi tạo hồ sơ bệnh án sẽ gọi riêng một tran khác để thêm dịch vụ vào
---châu - CHƯA TEST
+go
+
 create or alter proc createTreatment(
 	@dentistId uniqueidentifier,
 	@shift nvarchar(16),
@@ -943,7 +921,7 @@ create or alter proc createTreatment(
 ) as
 begin tran
 	set xact_abort on
-	set nocount on		
+	set nocount on
 	begin try
 		IF (@dentistId IS NULL OR @shift IS NULL OR @date IS NULL OR @symptoms IS NULL OR @notes IS NULL OR @toothTreated IS NULL OR @outcome IS NULL OR @treatmentCharge IS NULL)
 		begin
@@ -974,7 +952,6 @@ commit tran
 
 go
 
---châu
 create or alter proc addServiceToTreatment(
 	@treatmentId uniqueidentifier,
 	@serviceId uniqueidentifier
@@ -1016,7 +993,6 @@ go
 addServiceToTreatment '18C60A93-221F-4E67-9402-EC8E720806C8','9740541D-7B54-4BB2-A370-A3798A4A1DBE'
 go
 
---châu
 create or alter proc addDrugToTreatment(
 	@treatmentId uniqueidentifier,
 	@drugId uniqueidentifier,
