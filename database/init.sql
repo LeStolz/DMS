@@ -1009,6 +1009,8 @@ begin tran
 
 		grant exec on dbo.createGuestPatient to staffs
 		grant exec on dbo.getPatientByPhone to staffs
+		grant exec on dbo.getServices to staffs
+		grant exec on dbo.getServiceDetails to staffs
 		grant exec on dbo.getDentists to staffs
 		grant exec on dbo.getDentistDetails to staffs
 		grant exec on dbo.bookAppointment to staffs
@@ -1026,6 +1028,8 @@ begin tran
 		grant exec on dbo.removeDrugBatch to admins
 		grant exec on dbo.createStaff to admins
 		grant exec on dbo.createDentist to admins
+		grant exec on dbo.getPatientByPhone to admins
+		grant exec on dbo.getPatientDetails to admins
 		grant exec on dbo.lockUser to admins
 	end try
 	begin catch

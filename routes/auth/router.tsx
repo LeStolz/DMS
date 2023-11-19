@@ -2,6 +2,11 @@ import { NextFunction, Request, Response, Router } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import mssql from "mssql";
 import { DbName, getDb } from "../../dbs";
+import * as elements from "typed-html";
+import Signup from "./signup";
+import Login from "./login";
+import Warning from "../../components/warning";
+import Topbar from "../../components/topbar";
 
 const cookieOptions = {
   secure: true,
@@ -27,7 +32,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
-      db: mssql.Request;
+      db: () => Promise<mssql.Request>;
     }
   }
 }
@@ -40,11 +45,13 @@ declare module "jsonwebtoken" {
   }
 }
 
-export const patient = async (
+export const getRole = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  req.db = async () => await getDb("guest");
+
   try {
     const token = req.signedCookies.token;
     const {
@@ -55,24 +62,30 @@ export const patient = async (
 
     const user: User = {
       ...(
-        await req.db
+        await (await req.db())
           .input("phone", phone)
           .input("password", password)
           .input("role", role)
           .execute("getUserByCred")
-      ).recordset[0],
+      ).recordset?.[0],
       role,
     };
 
-    if (phone == null || password == null || user == null || user.id == null) {
+    if (
+      phone == null ||
+      password == null ||
+      user == null ||
+      user.id == null ||
+      user.isLocked
+    ) {
       throw null;
     }
 
     req.user = user;
-    req.db = await getDb("patient");
+    req.db = async () => await getDb(role);
     return next();
   } catch {
-    res.status(401).send("You have to be logged in to perform this action");
+    return next();
   }
 };
 
@@ -82,15 +95,38 @@ const role = async (
   res: Response,
   next: NextFunction
 ) => {
-  patient(req, res, async () => {
+  getRole(req, res, async () => {
     if (req.user?.role === role) {
-      req.db = await getDb(role);
       return next();
     }
 
-    return res
-      .status(402)
-      .send("You are not authorized to perform this action");
+    return res.status(402).send(
+      <Topbar user={req.user}>
+        <Warning fullscreen>
+          You are not authorized to perform this action.
+        </Warning>
+      </Topbar>
+    );
+  });
+};
+
+export const patient = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  getRole(req, res, async () => {
+    if (req.user?.role !== "guest") {
+      return next();
+    }
+
+    return res.status(401).send(
+      <Topbar user={req.user}>
+        <Warning fullscreen>
+          You have to be logged in to perform this action.
+        </Warning>
+      </Topbar>
+    );
   });
 };
 
@@ -108,13 +144,21 @@ export const dentist = async (
 
 const authRouter = Router();
 
+authRouter.get("/signup", async (req, res) => {
+  return res.send(<Signup />);
+});
+
+authRouter.get("/login", async (req, res) => {
+  return res.send(<Login />);
+});
+
 authRouter.post("/signup", async (req, res) => {
   try {
     const input = req.body;
     const user: User = {
       ...(
-        await req.db
-          .input("name", input.name)
+        await (await req.db())
+          .input("name", `${input.lastName} ${input.firstName}`)
           .input("password", input.password)
           .input("phone", input.phone)
           .input("gender", input.gender)
@@ -134,14 +178,16 @@ authRouter.post("/signup", async (req, res) => {
       cookieOptions
     );
 
-    return res.json({ ...user, password: undefined });
+    return res
+      .header("HX-Redirect", "/users")
+      .json({ ...user, password: undefined });
   } catch (error: any) {
     if (error instanceof Error) {
       console.error(error.message);
-      return res.status(400).send(error.message);
+      return res.status(400).send(error.message.split("'.")[0].split("'")[1]);
     }
 
-    return res.status(500).send("Signup failed. Please try again later");
+    return res.status(500).send("Signup failed. Please try again later.");
   }
 });
 
@@ -151,17 +197,27 @@ authRouter.post("/login", async (req, res) => {
 
     const user: User = {
       ...(
-        await req.db
+        await (await req.db())
           .input("phone", phone)
           .input("password", password)
           .input("role", role)
           .execute("getUserByCred")
-      ).recordset[0],
+      ).recordset?.[0],
       role,
     };
 
-    if (phone == null || password == null || user == null || user.id == null) {
-      return res.status(401).send("Phone and password do not match");
+    if (user.isLocked) {
+      return res.status(401).send("This account has been locked.");
+    }
+
+    if (
+      phone == null ||
+      password == null ||
+      user == null ||
+      user.id == null ||
+      user.isLocked
+    ) {
+      return res.status(401).send("Phone and password do not match.");
     }
 
     res.cookie(
@@ -173,19 +229,21 @@ authRouter.post("/login", async (req, res) => {
       cookieOptions
     );
 
-    return res.json({ ...user, password: undefined });
+    return res
+      .header("HX-Redirect", "/users")
+      .json({ ...user, password: undefined });
   } catch (error: any) {
     if (error instanceof Error) {
       console.error(error.message);
-      return res.status(400).send(error.message);
+      return res.status(400).send(error.message.split("'.")[0].split("'")[1]);
     }
 
-    return res.status(500).send("Signup failed. Please try again later");
+    return res.status(500).send("Login failed. Please try again later.");
   }
 });
 
 authRouter.get("/logout", patient, async (req, res) => {
-  return res.clearCookie("token").end();
+  return res.clearCookie("token").header("HX-Redirect", "/users").end();
 });
 
 export default authRouter;
