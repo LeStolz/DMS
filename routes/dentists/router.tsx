@@ -18,6 +18,10 @@ dentistsRouter.get("/patients", dentist, async (req, res) => {
 });
 
 dentistsRouter.get("/schedule", dentist, async (req, res) => {
+  // Use req.user.id to call getDentistSchedules
+  // Use req.user.id to call getDentistAppointments
+  // Use req.user.id to call addDentistSchedule
+  // Use req.user.id to call removeDentistSchedule
   return res.send(
     <Topbar user={req.user}>
       <Schedule />
@@ -26,6 +30,7 @@ dentistsRouter.get("/schedule", dentist, async (req, res) => {
 });
 
 dentistsRouter.get("/addTreatment", dentist, async (req, res) => {
+  // Use req.user.id to call getDentistAppointments
   return res.send(
     <Topbar user={req.user}>
       <AddTreatment />
@@ -34,6 +39,7 @@ dentistsRouter.get("/addTreatment", dentist, async (req, res) => {
 });
 
 dentistsRouter.post("/addTreatment", dentist, async (req, res) => {
+  // Use req.user.id to call getDentistAppointments
   return res.send(
     <Success fullscreen>Your treatment has been recorded.</Success>
   );

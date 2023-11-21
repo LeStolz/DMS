@@ -202,5 +202,5 @@ textarea:read-only {
   font-weight: bold;
   padding-left: 0;
   padding-right: 0;
-  border: 0;
+  border: var(--bs-border-width) solid transparent;
 }

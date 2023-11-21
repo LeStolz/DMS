@@ -43,6 +43,32 @@ const ContactInfo = () => {
           </div>
           <div class="modal-body">
             <div class="row p-2">
+              <div class="w-100 row p-0 m-0">
+                <div class="col-6">
+                  <label for="phone" class="form-label">
+                    Phone
+                  </label>
+                  <input
+                    type="phone"
+                    class="form-control"
+                    name="phone"
+                    id="phone"
+                    placeholder="0901234567"
+                  />
+                </div>
+                <div class="col-6">
+                  <label for="dob" class="form-label">
+                    Date of birth
+                  </label>
+                  <input type="date" class="form-control" name="dob" id="dob" />
+                </div>
+              </div>
+              <div class="w-100 row p-0 m-0 mb-3">
+                <span class="form-text">
+                  You don't have to fill in the rest if you have booked an
+                  appointment before.
+                </span>
+              </div>
               <div class="w-100 row p-0 m-0 mb-3">
                 <div class="col-6">
                   <label for="first-name" class="form-label">
@@ -67,26 +93,6 @@ const ContactInfo = () => {
                     id="last-name"
                     placeholder="Nguyen Van"
                   />
-                </div>
-              </div>
-              <div class="w-100 row p-0 m-0 mb-3">
-                <div class="col-6">
-                  <label for="phone" class="form-label">
-                    Phone
-                  </label>
-                  <input
-                    type="phone"
-                    class="form-control"
-                    name="phone"
-                    id="phone"
-                    placeholder="0901234567"
-                  />
-                </div>
-                <div class="col-6">
-                  <label for="dob" class="form-label">
-                    Date of birth
-                  </label>
-                  <input type="date" class="form-control" name="dob" id="dob" />
                 </div>
               </div>
               <div>

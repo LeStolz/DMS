@@ -12,6 +12,8 @@ usersRouter.get("/", async (req, res) => {
 });
 
 usersRouter.get("/profile", patient, async (req, res) => {
+  // Use req.user.id to call getPatientDetails
+
   return res.send(<Profile user={req.user} />);
 });
 
@@ -21,6 +23,10 @@ usersRouter.post("/makeAppointment", async (req, res) => {
       Your booking has been recorded. We will contact you right away.
     </Success>
   );
+});
+
+usersRouter.put("/updatePatient", patient, async (req, res) => {
+  // Use req.user.id to call updatePatient
 });
 
 export default usersRouter;

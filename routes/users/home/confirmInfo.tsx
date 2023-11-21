@@ -39,6 +39,39 @@ const ConfirmInfo = () => {
           </div>
           <div class="modal-body printable" id="confirmInfoModalBody">
             <div class="row p-2">
+              <div class="w-100 row p-0 m-0">
+                <div class="col-6">
+                  <label for="phone" class="form-label">
+                    Phone
+                  </label>
+                  <input
+                    type="phone"
+                    class="form-control"
+                    name="phone"
+                    id="phone"
+                    value="0901234567"
+                    readonly=""
+                  />
+                </div>
+                <div class="col-6">
+                  <label for="dob" class="form-label">
+                    Date of birth
+                  </label>
+                  <input
+                    readonly=""
+                    type="date"
+                    class="form-control"
+                    name="dob"
+                    id="dob"
+                  />
+                </div>
+              </div>
+              <div class="w-100 row p-0 m-0 mb-3">
+                <span class="form-text">
+                  You don't have to fill in the rest if you have booked an
+                  appointment before.
+                </span>
+              </div>
               <div class="w-100 row p-0 m-0 mb-3">
                 <div class="col-6">
                   <label for="first-name" class="form-label">
@@ -64,33 +97,6 @@ const ConfirmInfo = () => {
                     id="last-name"
                     value="Nguyen Van"
                     readonly=""
-                  />
-                </div>
-              </div>
-              <div class="w-100 row p-0 m-0 mb-3">
-                <div class="col-6">
-                  <label for="phone" class="form-label">
-                    Phone
-                  </label>
-                  <input
-                    type="phone"
-                    class="form-control"
-                    name="phone"
-                    id="phone"
-                    value="0901234567"
-                    readonly=""
-                  />
-                </div>
-                <div class="col-6">
-                  <label for="dob" class="form-label">
-                    Date of birth
-                  </label>
-                  <input
-                    readonly=""
-                    type="date"
-                    class="form-control"
-                    name="dob"
-                    id="dob"
                   />
                 </div>
               </div>

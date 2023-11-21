@@ -22,7 +22,9 @@ begin tran
 			constraint [Admin phone must contain only digits and have a length of 10.]
 				check(isnumeric(phone) = 1 and len(phone) = 10),
 			constraint [An admin with this phone number already exists.]
-				unique(phone)
+				unique(phone),
+			constraint [Admin password must contain lowercases, uppercases and digits and must be at least 8 long.]
+				check(len(password) >= 8 and password like '%[0-9]%' and password like '%[a-z]%' and password like '%[A-Z]%')
 		)
 
 		create table staff(
@@ -40,13 +42,15 @@ begin tran
 			constraint [Staff gender must be null, 'male' or 'female'.]
 				check(gender is null or gender in ('male', 'female')),
 			constraint [A staff with this phone number already exists.]
-				unique(phone)
+				unique(phone),
+			constraint [Staff password must contain lowercases, uppercases and digits and must be at least 8 long.]
+				check(len(password) >= 8 and password like '%[0-9]%' and password like '%[a-z]%' and password like '%[A-Z]%')
 		)
 
 		create table patient(
 			id uniqueidentifier default(newid()) primary key,
 			name nvarchar(64) not null,
-			password nvarchar(64) not null default('DMS123'),
+			password nvarchar(64),
 			phone nchar(10) not null,
 			gender nvarchar(8),
 			isLocked bit not null default(0),
@@ -64,7 +68,12 @@ begin tran
 			constraint [Patient address must not be empty.]
 				check(len(address) > 0),
 			constraint [A patient with this phone number already exists.]
-				unique(phone)
+				unique(phone),
+			constraint [Patient password must contain lowercases, uppercases and digits and must be at least 8 long.]
+				check(
+					password is null or
+					(len(password) >= 8 and password like '%[0-9]%' and password like '%[a-z]%' and password like '%[A-Z]%')
+				)
 		)
 
 		create table dentist(
@@ -82,7 +91,9 @@ begin tran
 			constraint [Dentist gender must be null, 'male' or 'female'.]
 				check(gender is null or gender in ('male', 'female')),
 			constraint [A dentist with this phone number already exists.]
-				unique(phone)
+				unique(phone),
+			constraint [Dentist password must contain lowercases, uppercases and digits and must be at least 8 long.]
+				check(len(password) >= 8 and password like '%[0-9]%' and password like '%[a-z]%' and password like '%[A-Z]%')
 		)
 
 		create table dentistSchedule(
@@ -233,48 +244,12 @@ begin tran
 		)
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 exec _createTables
-go
-
-create or alter function dbo._checkPassword(@password nvarchar(64)) returns bit as
-begin
-	if
-		len(@password) <= 8 or
-		@password not like '%[0-9]%' or
-		@password not like '%[a-z]%' or @password not like '%[A-Z]%'
-	begin
-		return 0
-	end
-
-	return 1
-end
-
-go
-
-create or alter function dbo._checkInvoiceOfTreatment(
-	@treatmentId uniqueidentifier,
-	@date date
-)
-returns bit as
-begin
-	if
-		@treatmentId is not null and
-		(select date from treatment t where t.id = @treatmentId)
-		>
-		any(select issueDate from invoice where treatmentId = @treatmentId)
-	begin
-		return 0
-	end
-
-	return 1
-end
-
 go
 
 create or alter function dbo._calculateInvoiceTotal(@treatmentId uniqueidentifier)
@@ -332,81 +307,12 @@ end
 
 go
 
-create or alter function dbo._checkDrugStock(
-	@drugId uniqueidentifier,
-	@expirationDate date,
-	@quantity float
-)
-returns int as
-begin
-	declare @import int, @stock int, @isRemoved bit
-	select
-		@import = import,
-		@stock = stock,
-		@isRemoved = isRemoved
-	from drugBatch where drugId = @drugId and expirationDate = @expirationDate
-
-	if @stock < 0 or @isRemoved = 1
-	begin
-		return 0
-	end
-
-	return 1
-end
-
-go
-
-create or alter function dbo._checkAppointmentTime(
-	@dentistId uniqueidentifier,
-	@shift nvarchar(16),
-	@date date = null,
-	@day int = null
-)
-returns int as
-begin
-	if exists(select * from appointment a where a.dentistId = @dentistId and (
-		datepart(dw, a.date) not in (select date from dentistSchedule where dentistId = @dentistId) or
-		a.shift not in (select shift from dentistSchedule where dentistId = @dentistId and date = datepart(dw, a.date))
-	))
-	begin
-		return 0
-	end
-
-	return 1
-end
-
-go
-
-create or alter trigger _onDentistScheduleDelete
-on dentistSchedule instead of delete as
-begin
-	set xact_abort on
-	set nocount on
-
-	print 'Do something'
-end
-
-go
-
 create or alter proc _createConstraints as
 begin tran
 	set xact_abort on
 	set nocount on
 
 	begin try
-		alter table admin add
-			constraint [Admin password must contain lowercases, uppercases and digits and must be at least 8 long.]
-				check(dbo._checkPassword(password) = 1)
-		alter table staff add
-			constraint [Staff password must contain lowercases, uppercases and digits and must be at least 8 long.]
-				check(dbo._checkPassword(password) = 1)
-		alter table patient add
-			constraint [Patient password must contain lowercases, uppercases and digits and must be at least 8 long.]
-				check(dbo._checkPassword(password) = 1)
-		alter table dentist add
-			constraint [Dentist password must contain lowercases, uppercases and digits and must be at least 8 long.]
-				check(dbo._checkPassword(password) = 1)
-
 		alter table invoice drop column total
 		alter table invoice
 		add total as dbo._calculateInvoiceTotal(treatmentId)
@@ -422,26 +328,8 @@ begin tran
 		alter table drugBatch drop column stock
 		alter table drugBatch
 		add stock as dbo._calculateDrugStock(drugId, expirationDate)
-		alter table prescribedDrug add
-			constraint [The prescribed drug is either out of stock or is removed.]
-				check(dbo._checkDrugStock(drugId, expirationDate, quantity) = 1)
-
-		alter table invoice add
-			constraint [Invoice must be issued after treatment.]
-				check(dbo._checkInvoiceOfTreatment(treatmentId, issueDate) = 1)
-		alter table treatment add
-			constraint [Treatment must be issued before invoice.]
-				check(dbo._checkInvoiceOfTreatment(id, date) = 1)
-
-		alter table appointment add
-			constraint [Appointment must take place during the schedule of this dentist.]
-				check(dbo._checkAppointmentTime(dentistId, shift, date, null) = 1)
-		alter table dentistSchedule add
-			constraint [This dentist schedule is currently in use by at least one appointment.]
-				check(dbo._checkAppointmentTime(dentistId, shift, null, date) = 1)
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -450,12 +338,7 @@ go
 exec _createConstraints
 go
 
-create or alter proc getUserByCred(
-	@phone nchar(10),
-	@password nvarchar(64),
-	@role nvarchar(16)
-)
-with execute as owner
+create or alter proc getUserByCred with execute as owner
 as
 begin tran
 	set xact_abort on
@@ -465,14 +348,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc getPatientByPhone(@phone nchar(10)) as
+create or alter proc getPatientByPhone as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -481,21 +363,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc createPatient(
-	@name nvarchar(64),
-	@password nvarchar(64),
-	@phone nchar(10),
-	@gender nvarchar(8),
-	@dob date,
-	@address nvarchar(128)
-) as
+create or alter proc createPatient as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -504,20 +378,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc createGuestPatient(
-	@name nvarchar(64),
-	@phone nchar(10),
-	@gender nvarchar(8),
-	@dob date,
-	@address nvarchar(128)
-) as
+create or alter proc createGuestPatient as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -526,7 +393,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -542,7 +408,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -558,7 +423,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -574,7 +438,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -590,14 +453,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc getDentistDetails(@id uniqueidentifier) as
+create or alter proc getDentistDetails as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -606,18 +468,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc bookAppointment(
-	@dentistId uniqueidentifier,
-	@patientId uniqueidentifier,
-	@date date
-) as
+create or alter proc getDentistSchedules as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -626,17 +483,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc getDentistsOnShift(
-	@date date,
-	@shift nvarchar(16)
-) as
+create or alter proc getDentistAppointments as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -645,7 +498,51 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getUsers as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc bookAppointment as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc getDentistsOnShift as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
 		throw
 	end catch
 commit tran
@@ -661,14 +558,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc getPatientDetails(@id uniqueidentifier) as
+create or alter proc getPatientDetails as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -677,7 +573,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -693,7 +588,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -709,7 +603,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -725,14 +618,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc getDrugDetails(@id uniqueidentifier) as
+create or alter proc getDrugDetails as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -741,7 +633,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -757,14 +648,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc getServiceDetails(@id uniqueidentifier) as
+create or alter proc getServiceDetails as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -773,7 +663,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -789,7 +678,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -805,7 +693,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -821,7 +708,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -837,7 +723,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -853,7 +738,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -869,16 +753,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc createTreatment(
-	@serviceId uniqueidentifier
-) as
+create or alter proc createTreatment as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -887,17 +768,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc addServiceToTreatment(
-	@treatmentId uniqueidentifier,
-	@serviceId uniqueidentifier
-) as
+create or alter proc addServiceToTreatment as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -906,20 +783,13 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
 
 go
 
-create or alter proc addPrescriptionToTreatment(
-	@treatmentId uniqueidentifier,
-	@drugId uniqueidentifier,
-	@expirationDate date,
-	@dosage nvarchar(64),
-	@quantity int
-) as
+create or alter proc addDrugToTreatment as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -928,7 +798,6 @@ begin tran
 		print 'Do something'
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -978,6 +847,8 @@ begin tran
 		grant exec on dbo.createPatient to guests
 		grant exec on dbo.createGuestPatient to guests
 		grant exec on dbo.getDentists to guests
+		grant exec on dbo.getDentistSchedules to guests
+		grant exec on dbo.getDentistAppointments to guests
 		grant exec on dbo.getDentistDetails to guests
 		grant exec on dbo.bookAppointment to guests
 		grant exec on dbo.getDentistsOnShift to guests
@@ -985,33 +856,35 @@ begin tran
 		grant exec on dbo.getServiceDetails to guests
 
 		grant exec on dbo.getDentists to patients
+		grant exec on dbo.getDentistSchedules to patients
+		grant exec on dbo.getDentistAppointments to patients
 		grant exec on dbo.getDentistDetails to patients
 		grant exec on dbo.bookAppointment to patients
 		grant exec on dbo.getDentistsOnShift to patients
 		grant exec on dbo.getServices to patients
 		grant exec on dbo.getServiceDetails to patients
 		grant exec on dbo.getUserByCred to patients
-		grant exec on dbo.updatePatient to patients
-		grant exec on dbo.getPatientDetails to patients
 
 		grant exec on dbo.getPatientByPhone to dentists
 		grant exec on dbo.getPatientDetails to dentists
+		grant exec on dbo.updatePatient to dentists
+		grant exec on dbo.getDentistDetails to dentists
 		grant exec on dbo.getServices to dentists
 		grant exec on dbo.getServiceDetails to dentists
 		grant exec on dbo.getDrugs to dentists
 		grant exec on dbo.getDrugDetails to dentists
 		grant exec on dbo.createTreatment to dentists
 		grant exec on dbo.addServiceToTreatment to dentists
-		grant exec on dbo.addPrescriptionToTreatment to dentists
-		grant exec on dbo.getDentistDetails to dentists
-		grant exec on dbo.addDentistSchedule to dentists
-		grant exec on dbo.removeDentistSchedule to dentists
+		grant exec on dbo.addDrugToTreatment to dentists
 
 		grant exec on dbo.createGuestPatient to staffs
 		grant exec on dbo.getPatientByPhone to staffs
+		grant exec on dbo.getPatientDetails to staffs
 		grant exec on dbo.getServices to staffs
 		grant exec on dbo.getServiceDetails to staffs
 		grant exec on dbo.getDentists to staffs
+		grant exec on dbo.getDentistSchedules to staffs
+		grant exec on dbo.getDentistAppointments to staffs
 		grant exec on dbo.getDentistDetails to staffs
 		grant exec on dbo.bookAppointment to staffs
 		grant exec on dbo.getDentistsOnShift to staffs
@@ -1028,12 +901,17 @@ begin tran
 		grant exec on dbo.removeDrugBatch to admins
 		grant exec on dbo.createStaff to admins
 		grant exec on dbo.createDentist to admins
-		grant exec on dbo.getPatientByPhone to admins
-		grant exec on dbo.getPatientDetails to admins
+		grant exec on dbo.getUsers to admins
 		grant exec on dbo.lockUser to admins
+
+		grant exec on dbo.updatePatient to patients
+		grant exec on dbo.getPatientDetails to patients
+		grant exec on dbo.getDentistSchedules to dentists
+		grant exec on dbo.getDentistAppointments to dentists
+		grant exec on dbo.addDentistSchedule to dentists
+		grant exec on dbo.removeDentistSchedule to dentists
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
@@ -1163,7 +1041,6 @@ begin tran
 			(@treatmentId, '2023-12-04')
 	end try
 	begin catch
-		rollback tran;
 		throw
 	end catch
 commit tran
