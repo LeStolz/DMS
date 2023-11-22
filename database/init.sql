@@ -125,7 +125,7 @@ begin tran
 			constraint [Appointment status must be 'pending', 'confirmed' or 'cancelled'.]
 				check(status in ('pending', 'confirmed', 'cancelled')),
 			constraint [Appointment date must be after today.]
-				check(getdate() < date)
+				check(getdate() <= date)
 		)
 
 		create table service(
@@ -262,7 +262,15 @@ begin
 		@totalServiceCharge = totalServiceCharge,
 		@prescriptionId = prescriptionId
 	from treatment where id = @treatmentId
-	select @totalPrescriptionCharge = total from prescription where id = @prescriptionId
+
+	if @prescriptionId is null
+	begin
+		set @totalPrescriptionCharge = 0
+	end
+	else
+	begin
+		select @totalPrescriptionCharge = total from prescription where id = @prescriptionId
+	end
 
 	return (@treatmentCharge + @totalServiceCharge + @totalPrescriptionCharge)
 end
@@ -284,6 +292,11 @@ go
 create or alter function dbo._calculatePrescriptionTotal(@prescriptionId uniqueidentifier)
 returns int as
 begin
+	if @prescriptionId is null or not exists(select * from prescription where id = @prescriptionId)
+	begin
+		return 0
+	end
+
 	return (
 		select coalesce(sum(price * quantity), 0) from prescribedDrug pd
 		join drug d on pd.drugId = d.id

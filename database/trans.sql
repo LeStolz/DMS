@@ -15,9 +15,33 @@ begin tran
 	set nocount on
 
 	begin try
-		declare @sql nvarchar(128) =
-			'select * from ' + @role + ' where phone = @phone and password = @password'
+		if @phone is null or @password is null or @role is null
+		begin;
+			throw 51000, 'Phone, password and role are required.', 1
+		end
 
+		if @role != 'admin'
+		begin
+			declare @sql nvarchar(128), @isLocked bit
+
+			set @sql = '
+				select @isLocked = isLocked from ' + quotename(@role) + '
+				where phone = @phone and password = @password
+			'
+			exec sp_executesql @sql,
+				N'@phone nchar(10), @password nvarchar(64), @isLocked bit output',
+				@phone = @phone, @password = @password, @isLocked = @isLocked output
+
+			if @isLocked = 1
+			begin;
+				throw 51000, 'This account is currently locked.', 1
+			end
+		end
+
+		set @sql = '
+			select * from ' + quotename(@role) + '
+			where phone = @phone and password = @password
+		'
 		exec sp_executesql @sql,
 			N'@phone nchar(10), @password nvarchar(64)',
 			@phone = @phone, @password = @password
@@ -37,15 +61,11 @@ begin tran
 	begin try
 		if @phone is null
 		begin;
-			throw 51000, 'Phone number cannot be null.', 1
+			throw 51000, 'Phone is required.', 1
 		end
 
-		if not exists (select 1 from PATIENT where phone = @phone)
-		begin;
-			throw 51000, 'This patient does not exist in the database.', 1
-		end
-
-		select id, name, phone, gender, dob, address from PATIENT where phone = @phone
+		select name, phone, gender, dob, address from patient
+		where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
 	end try
 	begin catch
 		throw
@@ -69,11 +89,20 @@ begin tran
 	begin try
 		if @name is null or @password is null or @phone is null or @gender is null or @dob is null or @address is null
 		begin;
-			throw 51000, 'Input cannot be null.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
 
-		insert into patient(name, password, phone, gender, dob, address)
+		if exists(select * from patient where phone = @phone and password is null)
+		begin
+			update patient
+			set name = @name, password = @password, gender = @gender, dob = @dob, address = @address
+			where phone = @phone and password is null
+		end
+		else
+		begin
+			insert into patient(name, password, phone, gender, dob, address)
 			values (@name, @password, @phone, @gender, @dob, @address)
+		end
 
 		select name, phone, gender, dob, address from patient where phone = @phone
 	end try
@@ -98,12 +127,20 @@ begin tran
 	begin try
 		if @name is null or @phone is null or @gender is null or @dob is null or @address is null
 		begin;
-			throw 51000, 'Input cannot be null.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
 
-		declare @password nvarchar(64) = 'guestdms@123'
-		insert into patient(name, password, phone, gender, dob, address)
-		values (@name, @password, @phone, @gender, @dob, @address)
+		if exists(select * from patient where phone = @phone and password is null)
+		begin
+			update patient
+			set name = @name, gender = @gender, dob = @dob, address = @address
+			where phone = @phone and password is null
+		end
+		else
+		begin
+			insert into patient(name, phone, gender, dob, address)
+			values (@name, @phone, @gender, @dob, @address)
+		end
 
 		select name, phone, gender, dob, address from patient where phone = @phone
 	end try
@@ -127,10 +164,12 @@ begin tran
 	begin try
 		if (@name is null or @password is null or @phone is null or @gender is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
+
 		insert into staff(name, password, phone, gender)
-			values (@name, @password, @phone, @gender)
+		values (@name, @password, @phone, @gender)
+
 		select * from staff where phone = @phone
 	end try
 	begin catch
@@ -140,7 +179,7 @@ commit tran
 
 go
 
-create or alter proc createDentist (
+create or alter proc createDentist(
 	@name nvarchar(64),
 	@password nvarchar(64),
 	@phone nchar(10),
@@ -152,10 +191,12 @@ begin tran
 	begin try
 		if (@name is null or @password is null or @phone is null or @gender is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
+
 		insert into dentist (name, password, phone, gender)
-			values (@name, @password, @phone, @gender)
+		values (@name, @password, @phone, @gender)
+
 		select * from dentist where phone = @phone
 	end try
 	begin catch
@@ -167,53 +208,80 @@ go
 
 create or alter proc lockUser(
 	@phone nchar(10),
-	@type nvarchar(16)
-) as
+	@role nvarchar(16)
+)
+with execute as owner
+as
 begin tran
 	set xact_abort on
 	set nocount on
 
 	begin try
-		if (@type is null)
+		if (@phone is null or @role is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'Phone and role are required.', 1
 		end
-		if (@type = 'patient')
-		begin
-			if not exists(select * from patient where phone = @phone)
+
+		if (@role = 'admin')
+		begin;
+			throw 51000, 'Cannot lock an admin.', 1
+		end
+
+		declare @sql nvarchar(256) = '
+			if not exists(select * from ' + quotename(@role) + ' where phone = @phone)
 			begin;
-				throw 51000, 'Patient does not exist.', 1
+				throw 51000, ''User does not exist.'', 1
 			end
 
-			update Patient
+			update ' + quotename(@role) + '
 			set isLocked = 1
 			where phone = @phone
-			select * from patient where phone = @phone
+		'
+		exec sp_executesql @sql,
+			N'@phone nchar(10), @role nvarchar(16)',
+			@phone = @phone, @role = @role
+	end try
+	begin catch
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc unlockUser(
+	@phone nchar(10),
+	@role nvarchar(16)
+)
+with execute as owner
+as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		if (@phone is null or @role is null)
+		begin;
+			throw 51000, 'Phone and role are required.', 1
 		end
-		else if (@type = 'dentist')
-		begin
-			if not exists(select * from dentist where phone = @phone)
+
+		if (@role = 'admin')
+		begin;
+			throw 51000, 'Cannot unlock an admin.', 1
+		end
+
+		declare @sql nvarchar(256) = '
+			if not exists(select * from ' + quotename(@role) + ' where phone = @phone)
 			begin;
-				throw 51000, 'Dentist does not exist.',1
+				throw 51000, ''User does not exist.'', 1
 			end
 
-			update Dentist
-			set isLocked = 1
+			update ' + quotename(@role) + '
+			set isLocked = 0
 			where phone = @phone
-			select * from dentist where phone = @phone
-		end
-		else if (@type = 'staff')
-		begin
-			if not exists(select * from staff where phone = @phone)
-			begin;
-				throw 51000, 'Staff does not exist.',1
-			end
-
-			update Staff
-			set isLocked = 1
-			where phone = @phone
-			select * from staff where phone = @phone
-		end
+		'
+		exec sp_executesql @sql,
+			N'@phone nchar(10), @role nvarchar(16)',
+			@phone = @phone, @role = @role
 	end try
 	begin catch
 		throw
@@ -228,7 +296,7 @@ begin tran
 	set nocount on
 
 	begin try
-		select id, name, phone, gender from DENTIST
+		select id from dentist
 	end try
 	begin catch
 		throw
@@ -245,24 +313,20 @@ begin tran
 	begin try
 		if (@id is null)
 		begin;
-			throw 51000, 'Input cannot be empty.',1
+			throw 51000, 'Id is required.', 1
 		end
-		else if not exists (select 1 from dentist where id = @id)
+
+		if not exists (select * from dentist where id = @id)
 		begin;
-			throw 51000, 'No such dentist in the database.',1
+			throw 51000, 'Dentist does not exist.', 1
 		end
-		select name as Name, phone as Phone, gender as Gender
-		from dentist
-		where id = @id
+
+		select id, name, phone, gender from dentist where id = @id
 	end try
 	begin catch
 		throw
 	end catch
 commit tran
-
-go
-exec getDentistDetails '737ECD2F-E49A-48D1-A8CF-DED2BA17FC43'
-go
 
 go
 
@@ -272,7 +336,17 @@ begin tran
 	set nocount on
 
 	begin try
-		print 'Do something'
+		if (@id is null)
+		begin;
+			throw 51000, 'Id is required.', 1
+		end
+
+		if not exists (select * from dentist where id = @id)
+		begin;
+			throw 51000, 'Dentist does not exist.', 1
+		end
+
+		select * from dentistSchedule where dentistId = @id
 	end try
 	begin catch
 		throw
@@ -287,7 +361,17 @@ begin tran
 	set nocount on
 
 	begin try
-		print 'Do something'
+		if (@id is null)
+		begin;
+			throw 51000, 'Id is required.', 1
+		end
+
+		if not exists (select * from dentist where id = @id)
+		begin;
+			throw 51000, 'Dentist does not exist.', 1
+		end
+
+		select * from appointment where dentistId = @id
 	end try
 	begin catch
 		throw
@@ -296,13 +380,25 @@ commit tran
 
 go
 
-create or alter proc getUsers as
+create or alter proc getUsers(@phone nchar(10)) as
 begin tran
 	set xact_abort on
 	set nocount on
 
 	begin try
-		print 'Do something'
+		if @phone is null
+		begin;
+			throw 51000, 'Phone is required.', 1
+		end
+
+		select id, phone, name, 'patient' as role from patient
+		where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
+		union all
+		select id, phone, name, 'dentist' as role from dentist
+		where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
+		union all
+		select id, phone, name, 'staff' as role from staff
+		where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
 	end try
 	begin catch
 		throw
@@ -324,36 +420,28 @@ begin tran
 	begin try
 		if @dentistId is null or @patientId is null or @shift is null or @date is null
 		begin;
-			throw 51000, 'Input cannot be null.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
 
-		if not exists (select 1 from PATIENT where id = @patientId)
+		if not exists (select * from patient where id = @patientId)
 		begin;
-			throw 51000, 'This patient does not exist in the database.', 1
+			throw 51000, 'Patient does not exist.', 1
 		end
 
-		if not exists (select 1 from DENTIST where id = @dentistId)
+		if not exists (select * from dentist where id = @dentistId)
 		begin;
-			throw 51000, 'This dentist does not exist in the database.', 1
+			throw 51000, 'Dentist does not exist.', 1
 		end
 
 		if not exists (
-			select 1
-			from DENTISTSCHEDULE
+			select * from dentistSchedule
 			where dentistId = @dentistId and shift = @shift and date = datepart(dw, @date)
 		)
 		begin;
 			throw 51000, 'Appointment must take place during the schedule of this dentist.', 1
 		end
 
-		declare @status nvarchar(16) = 'pending'
-		insert into APPOINTMENT values(@dentistId, @patientId, @shift, @date, @status)
-
-		select p.id, p.name, d.id, d.name, a.shift, a.date
-		from PATIENT p
-		join APPOINTMENT a on p.id = a.patientId
-		join DENTIST d on d.id = a.dentistId
-		where p.id = @patientId and a.shift = @shift and a.date = @date
+		insert into appointment values(@dentistId, @patientId, @shift, @date, 'pending')
 	end try
 	begin catch
 		throw
@@ -363,7 +451,7 @@ commit tran
 go
 
 create or alter proc getDentistsOnShift(
-	@date int,
+	@date date,
 	@shift nvarchar(16)
 ) as
 begin tran
@@ -373,30 +461,21 @@ begin tran
 	begin try
 		if @date is null or @shift is null
 		begin;
-			throw 51000, 'Input cannot be null.', 1
+			throw 51000, 'Date and shift are required.', 1
 		end
 
-		if not exists (
-			select 1
-			from DENTIST join DENTISTSCHEDULE on id = dentistId
-			where shift = @shift and date = @date
+		select id, name, phone, gender from dentist
+		join dentistSchedule ds on id = dentistId
+		where shift = @shift and date = datepart(dw, @date) and not exists(
+			select * from appointment
+			where dentistId = ds.dentistId and shift = @shift and date = @date
 		)
-		begin;
-			throw 51000, 'There are no dentists available on this shift.', 1
-		end
-
-		select id, name, phone, gender
-		from DENTIST join DENTISTSCHEDULE on id = dentistId
-		where shift = @shift and date = @date
 	end try
 	begin catch
 		throw
 	end catch
 commit tran
 
-go
-
-exec getDentistsOnShift '2023-11-20', 'afternoon'
 go
 
 create or alter proc updatePatient(
@@ -413,15 +492,15 @@ begin tran
 	begin try
 		if @id is null or @name is null or @gender is null or @dob is null or @address is null
 		begin;
-			throw 51000, 'Input cannot be null.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
 
-		if not exists (select 1 from PATIENT where id = @id)
+		if not exists (select * from patient where id = @id)
 		begin;
-			throw 51000, 'This patient does not exist in the database.', 1
+			throw 51000, 'Patient does not exist.', 1
 		end
 
-		update PATIENT
+		update patient
 		set name = @name, gender = @gender, dob = @dob, address = @address
 		where id = @id
 	end try
@@ -440,33 +519,49 @@ begin tran
 	begin try
 		if @id is null
 		begin;
-			throw 51000, 'ID cannot be null.', 1
+			throw 51000, 'Id is required.', 1
 		end
 
-		if not exists (select 1 from PATIENT where id = @id)
+		if not exists (select * from patient where id = @id)
 		begin;
-			throw 51000, 'This patient does not exist in the database.', 1
+			throw 51000, 'Patient does not exist.', 1
 		end
 
-		if not exists (select 1 from APPOINTMENT where patientId = @id)
-		begin;
-			throw 51000, 'This patient does not have any appointments.', 1
-		end
-
-		select p.name, p.dob, p.phone, p.gender, p.address,
-		 				dentist.name, t.shift, t.date, t.symptoms, t.notes, t.toothTreated, t.outcome,
-						drug.name, pd.dosage, pd.quantity, s.name, s.description
-		from PATIENT p
-		join APPOINTMENT a on a.patientId = p.id
-		join TREATMENT t on t.dentistId = a.dentistId and t.shift = a.shift and t.date = a.date
-		join DENTIST dentist on dentist.id = t.dentistId
-		join PRESCRIPTION pres on pres.id = t.prescriptionId
-		join PRESCRIBEDDRUG pd on pd.prescriptionId = pres.id
-		join DRUG drug on drug.id = pd.drugId
-		join TREATEDSERVICE ts on ts.treatmentId = t.id
-		join SERVICE s on s.id = ts.serviceId
+		select
+			p.name as [patient.name],
+			p.dob as [patient.dob],
+			p.phone as [patient.phone],
+			p.gender as [patient.gender],
+			p.address as [patient.address],
+			(
+		 		select t.shift, t.date, t.toothTreated, t.notes, t.treatmentCharge,
+				(
+					select d.name, d.phone, d.gender from dentist d
+					where t.dentistId = d.id
+					for json path, include_null_values
+				) as [dentist],
+				(
+					select s.name, s.price from treatedService ts
+					join service s on s.id = ts.serviceId
+					where ts.treatmentId = t.id
+					for json path, include_null_values
+				) as [services],
+				(
+					select d.name, d.price, pd.quantity, pd.dosage, pd.expirationDate from prescription ps
+					join prescribedDrug pd on pd.prescriptionId = ps.id
+					join drug d on d.id = pd.drugId
+					where t.prescriptionId = ps.id
+					for json path, include_null_values
+				) as [drugs]
+				from treatment t
+				join appointment a on
+					a.patientId = p.id and t.dentistId = a.dentistId and
+					t.shift = a.shift and t.date = a.date
+				for json path, include_null_values
+			) as [treatments]
+		from patient p
 		where p.id = @id
-
+		for json path, include_null_values
 	end try
 	begin catch
 		throw
@@ -487,24 +582,23 @@ begin tran
 	begin try
 		if (@id is null or @date is null or @shift is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'Id, date and shift are required.', 1
 		end
-		else if not exists(select 1 from dentist where id = @id)
+
+		if not exists(select * from dentist where id = @id)
 		begin;
-			throw 51000, 'No such dentist exists in the database.', 1
+			throw 51000, 'Dentist does not exist.', 1
 		end
-		insert into dentistSchedule
-		values (@id, @shift, @date)
-		select * from dentistSchedule where dentistId = @id
+
+		insert into dentistSchedule values (@id, @shift, @date)
+
+		select * from dentistSchedule where dentistId = @id and shift = @shift and date = @date
 	end try
 	begin catch
 		throw
 	end catch
 commit tran
 
-go
-
-exec addDentistSchedule @id = '737ECD2F-E49A-48D1-A8CF-DED2BA17FC43', @date = 1, @shift='afternoon'
 go
 
 create or alter proc removeDentistSchedule(
@@ -519,64 +613,54 @@ begin tran
 	begin try
 		if (@id is null or @date is null or @shift is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'Id, date and shift are required.', 1
 		end
-		if not exists(select 1 from dentist where id = @id)
+
+		if not exists(select * from dentist where id = @id)
 		begin;
-			throw 51000, 'No such dentist exists in the database.', 1
+			throw 51000, 'Dentist does not exist.', 1
 		end
-		if not exists(select 1 from dentistSchedule where dentistId = @id and [date] = @date and [shift] = @shift)
+
+		if not exists(
+			select * from dentistSchedule where dentistId = @id and date = @date and shift = @shift
+		)
 		begin;
-			throw 51000, 'No such schedule exists in the database.',1
+			throw 51000, 'Schedule does not exist.', 1
 		end
 
 		if exists(
-			select * from appointment a where
-				a.dentistId = @id and
-				datepart(dw, a.date) = @date and
-				a.shift = @shift
+			select * from appointment where
+				dentistId = @id and datepart(dw, date) = @date and shift = @shift
 		)
 		begin;
-			throw 51000, 'This dentist schedule cannot be deleted as it is currently in use by at least one appointment.', 1
+			throw 51000, 'This schedule cannot be deleted as it is currently in use by at least one appointment.', 1
 		end
 
 		delete from dentistSchedule
-		where dentistId = @id and [date] = @date and [shift] = @shift
-		select *
-		from dentistSchedule
-		where dentistId = @id
+		where dentistId = @id and date = @date and shift = @shift
+
+		select * from dentistSchedule where dentistId = @id
 	end try
 	begin catch
 		throw
 	end catch
 commit tran
+
 go
 
-exec removeDentistSchedule @id = '737ECD2F-E49A-48D1-A8CF-DED2BA17FC43', @date = 1, @shift='afternoon'
-go
-
-declare @id uniqueidentifier
-select @id = id from dentist where name = N'Trần Ngọc Diễm Châu'
-exec removeDentistSchedule @id, @date = 2, @shift = 'afternoon'
-go
-
-create or alter proc getDrugs as
+create or alter proc getDrugs(@name nvarchar(64)) as
 begin tran
 	set xact_abort on
 	set nocount on
 
 	begin try
-		if not exists(select 1 from drug)
-			begin;
-				throw 51000, 'No drug recorded in the database.', 1
-			end
-		select d.id, d.name, d.price, d.unit, db.stock, db.expirationDate
-		from drug d
-		left join (select drugId, expirationDate, stock
-					from drugBatch db
-					where db.isRemoved = 0 and db.expirationDate = (select min(expirationDate) from drugBatch as db2
-												where db2.drugId = db.drugId)) db
-		on db.drugId = d.id
+		if @name is null
+		begin;
+			throw 51000, 'Name is required.', 1
+		end
+
+		select id, name from drug
+		where name like (cast(trim(@name) as nvarchar(65)) + '%')
 	end try
 	begin catch
 		throw
@@ -585,39 +669,38 @@ commit tran
 
 go
 
-exec getDrugs
-go
-
-create or alter proc getDrugDetails(@name nvarchar(64)) as
+create or alter proc getDrugDetails(@id uniqueidentifier) as
 begin tran
 	set xact_abort on
 	set nocount on
 
 	begin try
-		if (@name is null)
+		if (@id is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'Id is required.', 1
 		end
-		if not exists(select 1 from drug where name = @name)
+
+		if not exists(select * from drug where id = @id)
 		begin;
-			throw 51000, 'No such drug exists in the database.', 1
+			throw 51000, 'Drug does not exist.', 1
 		end
-		select d.id as ID, d.name as Name, d.price as Price, d.unit as Unit, db.stock as Stock, db.expirationDate as ExpirationDate
+
+		select
+			d.id, d.name, d.directive, d.price, d.unit,
+			(
+				select db.stock, db.expirationDate from drugBatch db
+				where db.drugId = d.id and db.isRemoved = 0
+				for json path, include_null_values
+			) as [drugBatches]
 		from drug d
-		left join (select drugId, expirationDate, stock
-					from drugBatch db
-					where db.isRemoved = 0 and db.expirationDate = (select min(expirationDate) from drugBatch as db2
-												where db2.drugId = db.drugId)) db
-		on db.drugId = d.id
-		where d.name = @name
+		where d.id = @id
+		for json path, include_null_values
 	end try
 	begin catch
 		throw
 	end catch
 commit tran
-go
 
-exec getDrugDetails 'Ibuprofen'
 go
 
 create or alter proc getServices as
@@ -626,20 +709,13 @@ begin tran
 	set nocount on
 
 	begin try
-		if not exists(select 1 from service)
-		begin;
-			throw 51000, 'No recorded services in the database.', 1
-		end
-		select *
-		from service
+		select id, name from service
 	end try
 	begin catch
 		throw
 	end catch
 commit tran
-go
 
-exec getServices
 go
 
 create or alter proc getServiceDetails(@id uniqueidentifier) as
@@ -650,15 +726,15 @@ begin tran
 	begin try
 		if (@id is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'Id is required.', 1
 		end
-		if not exists(select 1 from service where id = @id)
+
+		if not exists(select * from service where id = @id)
 		begin;
-			throw 51000, 'No such service exists in the database.', 1
+			throw 51000, 'Service does not exist.', 1
 		end
-		select *
-		from service
-		where id = @id
+
+		select * from service where id = @id
 	end try
 	begin catch
 		throw
@@ -667,14 +743,11 @@ commit tran
 
 go
 
-exec getServiceDetails '83EFABD4-5C5C-4687-BD95-4E506212900D'
-go
-
 create or alter proc createDrug(
-		@name nvarchar(64),
-		@directive nvarchar(512),
-		@price int,
-		@unit nvarchar(64)
+	@name nvarchar(64),
+	@directive nvarchar(512),
+	@price int,
+	@unit nvarchar(64)
 ) as
 begin tran
 	set xact_abort on
@@ -683,9 +756,11 @@ begin tran
 	begin try
 		if (@name is null or @directive is null or @price is null or @unit is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
+
 		insert into drug (name, directive, price, unit) values (@name, @directive, @price, @unit)
+
 		select * from drug where name = @name
 	end try
 	begin catch
@@ -695,15 +770,12 @@ commit tran
 
 go
 
-exec createDrug 'Acetaminophen', 'Used for the treatment of mild to moderate pain and reduction of fever. It is available over the counter in various forms, the most common being oral forms.', 100, 'tablet (500mg)'
-go
-
 create or alter proc updateDrug(
-		@id uniqueidentifier,
-		@name nvarchar(64),
-		@directive nvarchar(512),
-		@price int,
-		@unit nvarchar(64)
+	@id uniqueidentifier,
+	@name nvarchar(64),
+	@directive nvarchar(512),
+	@price int,
+	@unit nvarchar(64)
 ) as
 begin tran
 	set xact_abort on
@@ -712,18 +784,19 @@ begin tran
 	begin try
 		if (@id is null or @name is null or @directive is null or @price is null or @unit is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
-		if not exists(select 1 from drug where id = @id)
+
+		if not exists(select * from drug where id = @id)
 		begin;
-			throw 51000, 'No such drug exists in the database.', 1
+			throw 51000, 'Drug does not exist.', 1
 		end
+
 		update drug
 		set name = @name, directive = @directive, price = @price, unit = @unit
 		where id = @id
-		select *
-		from drug
-		where id = @id
+
+		select * from drug where id = @id
 	end try
 	begin catch
 		throw
@@ -732,12 +805,7 @@ commit tran
 
 go
 
-exec updateDrug 'DB1ED0FD-84A2-4B1A-B873-24AC98B37AAA', 'Acetaminophen', 'Used for the treatment of mild to moderate pain and reduction of fever. It is available over the counter in various forms, the most common being oral forms.', 10000, 'tablet (500mg)'
-go
-
-create or alter proc deleteDrug(
-	@id uniqueidentifier
-) as
+create or alter proc deleteDrug(@id uniqueidentifier) as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -745,13 +813,16 @@ begin tran
 	begin try
 		if (@id is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'Id is required.', 1
 		end
-		if not exists(select 1 from drug where id = @id)
+
+		if not exists(select * from drug where id = @id)
 		begin;
-			throw 51000, 'No such drug exists in the database.', 1
+			throw 51000, 'Drug does not exist.', 1
 		end
+
 		delete from drug where id = @id
+
 		select * from drug
 	end try
 	begin catch
@@ -759,9 +830,6 @@ begin tran
 	end catch
 commit tran
 
-go
-
-exec deleteDrug 'DB1ED0FD-84A2-4B1A-B873-24AC98B37AAA'
 go
 
 create or alter proc addDrugBatch(
@@ -776,21 +844,21 @@ begin tran
 	begin try
 		if (@drugId is null or @exp is null or @import is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
-		if not exists(select 1 from drug where id = @drugId)
+
+		if not exists(select * from drug where id = @drugId)
 		begin;
-			throw 51000, 'No such drug exists in the database.', 1
+			throw 51000, 'Drug does not exist.', 1
 		end
-		if exists(select 1 from drugBatch where drugId = @drugId and expirationDate = @exp and isRemoved = 0)
-		begin;
-			throw 51000, 'Drug batch with such id and expiration date has already been recorded. Please update instead.', 1
-		end
+
 		if (@exp < getdate())
 		begin;
-			throw 51000, 'Drug batch has already expired. Please do not import this drug batch.', 1
+			throw 51000, 'Drug batch has already expired.', 1
 		end
-		insert into drugBatch (drugId, expirationDate, import) values (@drugId, @exp, @import)
+
+		insert into drugBatch(drugId, expirationDate, import) values (@drugId, @exp, @import)
+
 		select * from drugBatch where drugId = @drugId and expirationDate = @exp
 	end try
 	begin catch
@@ -798,15 +866,6 @@ begin tran
 	end catch
 commit tran
 
-go
-
-exec addDrugBatch 'FD77D9E9-98B9-40FF-BDC6-9061045DB88E', '2023-11-9', 100
-go
-exec addDrugBatch 'FD77D9E9-98B9-40FF-BDC6-9061045DB88E', '2023-11-10', 100
-go
-exec addDrugBatch 'FD77D9E9-98B9-40FF-BDC6-9061045DB88E', '2024-11-10', 100
-go
-exec addDrugBatch 'FD77D9E9-98B9-40FF-BDC6-9061045DB88E', '2024-11-30', 100
 go
 
 create or alter proc removeDrugBatch(
@@ -820,31 +879,24 @@ begin tran
 	begin try
 		if (@drugId is null or @exp is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'Drug id and expiration date are required.', 1
 		end
-		if not exists(select 1 from drug where id = @drugId)
+
+		if not exists(select * from drugBatch where drugId = @drugId and expirationDate = @exp and isRemoved = 0)
 		begin;
-			throw 51000, 'No such drug exists in the database.', 1
+			throw 51000, 'Drug batch does not exist.', 1
 		end
-		if not exists(select 1 from drugBatch where drugId = @drugId and expirationDate = @exp and isRemoved = 0)
-		begin;
-			throw 51000, 'No such drug batch exists in the database.', 1
-		end
-		update drugBatch
-		set isRemoved = 1
+
+		update drugBatch set isRemoved = 1
 		where drugId = @drugId and expirationDate = @exp
-		select *
-		from drugBatch
-		where drugId = @drugId
+
+		select * from drugBatch where drugId = @drugId
 	end try
 	begin catch
 		throw
 	end catch
 commit tran
 
-go
-
-exec removeDrugBatch '97889C8F-844B-40BC-BD32-99312AC409C2', '2023-11-11'
 go
 
 create or alter proc createInvoice(@treatmentId uniqueidentifier) as
@@ -855,27 +907,20 @@ begin tran
 	begin try
 		if @treatmentId is null
 		begin;
-			throw 51000, 'Input cannot be null.', 1
+			throw 51000, 'Treatment id is required.', 1
 		end
 
-		if not exists (select 1 from treatment where id = @treatmentId)
+		if not exists(select * from treatment where id = @treatmentId)
 		begin;
-			throw 51000, 'This appointment does not exist in the database.', 1
+			throw 51000, 'Treatment does not exist.', 1
 		end
 
-		if (select date from treatment t where t.id = @treatmentId) > getdate()
+		if (select date from treatment where id = @treatmentId) >= getdate()
 		begin;
 			throw 51000, 'Invoice must be issued after treatment.', 1
 		end
 
-	insert into INVOICE (treatmentId, issueDate) values (@treatmentId, GETDATE())
-
-	select t.treatmentCharge, t.totalServiceCharge, p.total as totalDrugCharge, i.total as totalInvoiceCharge, i.issueDate
-	from TREATMENT t
-	left join PRESCRIPTION p on p.id = t.prescriptionId
-	join INVOICE i on i.treatmentId = t.id
-	where t.id = @treatmentId
-
+		insert into invoice(treatmentId) values (@treatmentId)
 	end try
 	begin catch
 		throw
@@ -897,22 +942,29 @@ create or alter proc createTreatment(
 begin tran
 	set xact_abort on
 	set nocount on
+
 	begin try
-		IF (@dentistId IS NULL OR @shift IS NULL OR @date IS NULL OR @symptoms IS NULL OR @notes IS NULL OR @toothTreated IS NULL OR @outcome IS NULL OR @treatmentCharge IS NULL)
+		if (
+			@dentistId is null or @shift is null or @date is null or
+			@symptoms is null or @notes is null or @toothTreated is null or @outcome is null or @treatmentCharge is null
+		)
 		begin;
-			throw 51000, 'Input cannot be empty.',1
+			throw 51000, 'All parameters are required.',1
 		end
-		if not exists(select 1 from dentist where id = @dentistId)
+
+		if not exists(select * from dentist where id = @dentistId)
 		begin;
-			throw 51000, 'No such doctor in the database.',1
+			throw 51000, 'Denstist does not exist.', 1
 		end
-		if not exists(select 1 from appointment where dentistId = @dentistId and shift = @shift and date = @date)
+
+		if not exists(select * from appointment where dentistId = @dentistId and shift = @shift and date = @date)
 		begin;
-			throw 51000, 'The appointment does not exist in the database.',1
+			throw 51000, 'Appointment does not exist.', 1
 		end
-		declare @serviceCharge int
-		insert into treatment (dentistId, shift, date, symptoms, notes, toothTreated, outcome, treatmentCharge)
+
+		insert into treatment(dentistId, shift, date, symptoms, notes, toothTreated, outcome, treatmentCharge)
 		values (@dentistId, @shift, @date, @symptoms, @notes, @toothTreated, @outcome, @treatmentCharge)
+
 		select * from treatment where dentistId = @dentistId and shift = @shift and date = @date
 	end try
 	begin catch
@@ -933,20 +985,24 @@ begin tran
 	begin try
 		if (@treatmentId is null or @serviceId is null)
 		begin;
-			throw 51000, 'Input cannot be empty.',1
+			throw 51000, 'Treatment id and service id are required.', 1
 		end
-		if not exists(select 1 from treatment where id = @treatmentId)
+
+		if not exists(select * from treatment where id = @treatmentId)
 		begin;
-			throw 51000, 'No such treatment record in the database.',1
+			throw 51000, 'Treatment does not exist.', 1
 		end
-		if not exists(select 1 from service where id = @serviceId)
+
+		if not exists(select * from service where id = @serviceId)
 		begin;
-			throw 51000, 'No such service in the database.',1
+			throw 51000, 'Service does not exist.', 1
 		end
+
 		insert into treatedService values (@treatmentId, @serviceId)
+
 		select ts.treatmentId, ts.serviceId, s.name
 		from treatedService ts
-		join (select name, id from service) s on s.id = ts.serviceId
+		join service s on s.id = ts.serviceId
 		where treatmentId = @treatmentId
 	end try
 	begin catch
@@ -954,9 +1010,6 @@ begin tran
 	end catch
 commit tran
 
-go
-
-addServiceToTreatment '18C60A93-221F-4E67-9402-EC8E720806C8','9740541D-7B54-4BB2-A370-A3798A4A1DBE'
 go
 
 create or alter proc addDrugToTreatment(
@@ -970,29 +1023,21 @@ begin tran
 	set xact_abort on
 	set nocount on
 
-	declare @presId uniqueidentifier
-	declare @tempTable table ( id uniqueidentifier )
-
 	begin try
 		if (@treatmentId is null or @drugId is null or @expirationDate is null or @dosage is null or @quantity is null)
 		begin;
-			throw 51000, 'Input cannot be empty.', 1
+			throw 51000, 'All parameters are required.', 1
 		end
-		if not exists(select 1 from treatment where id = @treatmentId)
+
+		if not exists(select * from treatment where id = @treatmentId)
 		begin;
-			throw 51000, 'No such treatment record exists in the database.', 1
+			throw 51000, 'Treatment does not exist.', 1
 		end
-		if not exists(select 1 from drug where id = @drugId)
+
+		if not exists(select * from drug where id = @drugId)
 		begin;
-			throw 51000, 'No such drug exists in the database.', 1
+			throw 51000, 'Drug does not exist.', 1
 		end
-		if not exists(select 1 from drugBatch db where db.drugId = @drugId and isRemoved = 0 and expirationDate >= getdate() and stock > @quantity)
-		begin;
-			throw 51000, 'This drug has run out of stock (not enough) or all expired.', 1
-		end
-		select @presId = prescriptionId
-		from treatment
-		where id = @treatmentId
 
 		declare @import int, @stock int, @isRemoved bit
 		select
@@ -1006,12 +1051,17 @@ begin tran
 			throw 51000, 'The prescribed drug is either out of stock or is removed.', 1
 		end
 
+		declare @presId uniqueidentifier
+		declare @tempTable table (id uniqueidentifier)
+
+		select @presId = prescriptionId from treatment
+		where id = @treatmentId
+
 		if @presId is null
 		begin
 			insert into prescription
 			output inserted.id into @tempTable
 			default values
-
 			select @presId = id from @tempTable
 
 			update treatment
@@ -1019,21 +1069,16 @@ begin tran
 			where id = @treatmentId
 		end
 
-		if exists(select 1 from prescribedDrug pd where pd.drugId = @drugId and pd.prescriptionId = @presId)
-		begin;
-			throw 51000, 'This drug has already been added to this prescription.', 1
-		end
-		insert into prescribedDrug (prescriptionId, drugId, expirationDate, dosage, quantity) values (@presId, @drugId, @expirationDate, @dosage, @quantity)
+		insert into prescribedDrug(prescriptionId, drugId, expirationDate, dosage, quantity) values
+			(@presId, @drugId, @expirationDate, @dosage, @quantity)
+
+		select pd.*, d.name from prescribedDrug pd
+		join drug d on d.id = pd.drugId
+		where prescriptionId = @presId
 	end try
 	begin catch
 		throw
 	end catch
 commit tran
 
-go
-
-exec getDrugs
-go
-
-addDrugToTreatment '18C60A93-221F-4E67-9402-EC8E720806C8', 'fd77d9e9-98b9-40ff-bdc6-9061045db88e', '2024-11-11', '1 pill after dinner', 1
 go
