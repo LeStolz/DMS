@@ -252,31 +252,6 @@ go
 exec _createTables
 go
 
-create or alter function dbo._calculateInvoiceTotal(@treatmentId uniqueidentifier)
-returns int as
-begin
-	declare @treatmentCharge int, @totalServiceCharge int
-	declare @prescriptionId uniqueidentifier, @totalPrescriptionCharge int
-	select
-		@treatmentCharge = treatmentCharge,
-		@totalServiceCharge = totalServiceCharge,
-		@prescriptionId = prescriptionId
-	from treatment where id = @treatmentId
-
-	if @prescriptionId is null
-	begin
-		set @totalPrescriptionCharge = 0
-	end
-	else
-	begin
-		select @totalPrescriptionCharge = total from prescription where id = @prescriptionId
-	end
-
-	return (@treatmentCharge + @totalServiceCharge + @totalPrescriptionCharge)
-end
-
-go
-
 create or alter function dbo._calculateServiceTotal(@treatmentId uniqueidentifier)
 returns int as
 begin
@@ -326,10 +301,6 @@ begin tran
 	set nocount on
 
 	begin try
-		alter table invoice drop column total
-		alter table invoice
-		add total as dbo._calculateInvoiceTotal(treatmentId)
-
 		alter table treatment drop column totalServiceCharge
 		alter table treatment
 		add totalServiceCharge as dbo._calculateServiceTotal(id)
@@ -1049,9 +1020,6 @@ begin tran
 
 		insert into treatedService(treatmentId, serviceId) values
 			(@treatmentId, @serviceId)
-
-		insert into invoice(treatmentId, issueDate) values
-			(@treatmentId, '2023-12-04')
 	end try
 	begin catch
 		throw

@@ -474,6 +474,9 @@ begin tran
 		end
 
 		insert into appointment values(@dentistId, @patientId, @shift, @date, 'pending')
+
+		select * from appointment 
+		where dentistId = @dentistId and shift = @shift and date = @date
 	end try
 	begin catch
 		throw
@@ -972,7 +975,24 @@ begin tran
 			throw 51000, 'Invoice must be issued after treatment.', 1
 		end
 
-		insert into invoice(treatmentId) values (@treatmentId)
+		declare @total int, @prescriptionId uniqueidentifier, @totalPrescriptionCharge int
+		select
+			@total = (treatmentCharge + totalServiceCharge),
+			@prescriptionId = prescriptionId
+		from treatment where id = @treatmentId
+
+		if @prescriptionId is null
+		begin
+			set @totalPrescriptionCharge = 0
+		end
+		else
+		begin
+			select @totalPrescriptionCharge = total from prescription where id = @prescriptionId
+		end
+
+		insert into invoice(treatmentId, total) values (@treatmentId, @total + @totalPrescriptionCharge)
+
+		select * from invoice where treatmentId = @treatmentId and issueDate = convert(date, getdate())
 	end try
 	begin catch
 		throw
