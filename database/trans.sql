@@ -1039,6 +1039,11 @@ begin tran
 			throw 51000, 'Drug does not exist.', 1
 		end
 
+		if not exists(select * from drugBatch where drugId = @drugId and expirationDate = @expirationDate)
+		begin;
+			throw 51000, 'Drug batch does not exist.', 1
+		end
+
 		declare @import int, @stock int, @isRemoved bit
 		select
 			@import = import,
