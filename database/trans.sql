@@ -53,7 +53,7 @@ commit tran
 
 go
 
-create or alter proc getPatientByPhone(@phone nchar(10)) as
+create or alter proc getPatientsByPhone(@phone nchar(10)) as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -62,6 +62,14 @@ begin tran
 		if @phone is null
 		begin;
 			throw 51000, 'Phone is required.', 1
+		end
+
+		if not exists(		
+			select * from patient
+			where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
+		)
+		begin;
+			throw 51000, 'No patient found.', 1
 		end
 
 		select name, phone, gender, dob, address from patient
@@ -296,6 +304,11 @@ begin tran
 	set nocount on
 
 	begin try
+		if not exists(select * from dentist)
+		begin;
+			throw 51000, 'No dentist found.', 1
+		end
+
 		select id from dentist
 	end try
 	begin catch
@@ -346,6 +359,11 @@ begin tran
 			throw 51000, 'Dentist does not exist.', 1
 		end
 
+		if not exists (select * from dentistSchedule where dentistId = @id)
+		begin;
+			throw 51000, 'Dentist does not have any schedule.', 1
+		end
+
 		select * from dentistSchedule where dentistId = @id
 	end try
 	begin catch
@@ -371,6 +389,11 @@ begin tran
 			throw 51000, 'Dentist does not exist.', 1
 		end
 
+		if not exists (select * from appointment where dentistId = @id)
+		begin;
+			throw 51000, 'Dentist does not have any appointment.', 1
+		end
+
 		select * from appointment where dentistId = @id
 	end try
 	begin catch
@@ -391,14 +414,23 @@ begin tran
 			throw 51000, 'Phone is required.', 1
 		end
 
-		select id, phone, name, 'patient' as role from patient
-		where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
-		union all
-		select id, phone, name, 'dentist' as role from dentist
-		where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
-		union all
-		select id, phone, name, 'staff' as role from staff
-		where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
+		select * into #user from (
+			select id, phone, name, 'patient' as role from patient
+			where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
+			union all
+			select id, phone, name, 'dentist' as role from dentist
+			where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
+			union all
+			select id, phone, name, 'staff' as role from staff
+			where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
+		) as [user]
+
+		if not exists(select * from #user)
+		begin;
+			throw 51000, 'No user found.', 1
+		end
+
+		select * from #user
 	end try
 	begin catch
 		throw
@@ -464,12 +496,19 @@ begin tran
 			throw 51000, 'Date and shift are required.', 1
 		end
 
-		select id, name, phone, gender from dentist
+		select id, name, phone, gender into #dentistOnShift from dentist
 		join dentistSchedule ds on id = dentistId
 		where shift = @shift and date = datepart(dw, @date) and not exists(
 			select * from appointment
 			where dentistId = ds.dentistId and shift = @shift and date = @date
 		)
+
+		if not exists(select * from #dentistOnShift)
+		begin;
+			throw 51000, 'No dentist found.', 1
+		end
+
+		select * from #dentistOnShift
 	end try
 	begin catch
 		throw
@@ -659,6 +698,14 @@ begin tran
 			throw 51000, 'Name is required.', 1
 		end
 
+		if not exists(
+			select * from drug
+			where name like (cast(trim(@name) as nvarchar(65)) + '%')
+		)
+		begin;
+			throw 51000, 'No drug found.', 1
+		end
+
 		select id, name from drug
 		where name like (cast(trim(@name) as nvarchar(65)) + '%')
 	end try
@@ -709,6 +756,11 @@ begin tran
 	set nocount on
 
 	begin try
+		if not exists(select * from service)
+		begin;
+			throw 51000, 'No service found.', 1
+		end
+
 		select id, name from service
 	end try
 	begin catch
