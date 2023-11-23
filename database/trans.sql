@@ -1045,6 +1045,11 @@ begin tran
 			throw 51000, 'Treatment does not exist.', 1
 		end
 
+		if exists(select * from invoice where treatmentId = @treatmentId)
+		begin;
+			throw 51000, 'Treatment cannot be altered as it has already been invoiced.', 1
+		end
+
 		if not exists(select * from service where id = @serviceId)
 		begin;
 			throw 51000, 'Service does not exist.', 1
@@ -1084,6 +1089,11 @@ begin tran
 		if not exists(select * from treatment where id = @treatmentId)
 		begin;
 			throw 51000, 'Treatment does not exist.', 1
+		end
+		
+		if exists(select * from invoice where treatmentId = @treatmentId)
+		begin;
+			throw 51000, 'Treatment cannot be altered as it has already been invoiced.', 1
 		end
 
 		if not exists(select * from drug where id = @drugId)
