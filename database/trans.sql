@@ -545,6 +545,8 @@ begin tran
 		update patient
 		set name = @name, gender = @gender, dob = @dob, address = @address
 		where id = @id
+		
+		select id, name, gender, dob, address from patient where id = @id
 	end try
 	begin catch
 		throw
