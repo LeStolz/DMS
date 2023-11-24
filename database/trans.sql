@@ -975,22 +975,23 @@ begin tran
 			throw 51000, 'Invoice must be issued after treatment.', 1
 		end
 
-		declare @total int, @prescriptionId uniqueidentifier, @totalPrescriptionCharge int
+		declare @total int, @prescriptionId uniqueidentifier
 		select
 			@total = (treatmentCharge + totalServiceCharge),
 			@prescriptionId = prescriptionId
 		from treatment where id = @treatmentId
 
-		if @prescriptionId is null
+		if @prescriptionId is not null
 		begin
-			set @totalPrescriptionCharge = 0
-		end
-		else
-		begin
-			select @totalPrescriptionCharge = total from prescription where id = @prescriptionId
+			select @total += total from prescription where id = @prescriptionId
 		end
 
-		insert into invoice(treatmentId, total) values (@treatmentId, @total + @totalPrescriptionCharge)
+		if exists(select * from invoice where treatmentId = @treatmentId and total != @total)
+		begin;
+			throw 51000, 'Invoice is no longer valid as prices have changed.', 1
+		end
+
+		insert into invoice(treatmentId, total) values (@treatmentId, @total)
 
 		select * from invoice where treatmentId = @treatmentId and issueDate = convert(date, getdate())
 	end try

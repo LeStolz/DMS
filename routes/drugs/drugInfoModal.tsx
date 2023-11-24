@@ -14,7 +14,7 @@ const DrugInfoModal = ({ scrud = false }: { scrud?: boolean }) => {
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title" id="drugInfoModalModalLabel">
-              Amoxicillin
+              Drug Info
             </h4>
             <div class="d-flex align-items-center gap-3">
               <button
@@ -29,6 +29,29 @@ const DrugInfoModal = ({ scrud = false }: { scrud?: boolean }) => {
           </div>
           <div class="modal-body">
             <div class="row p-2">
+              <div class="mb-3">
+                <label for="name" class="form-label">
+                  Name
+                </label>
+                {scrud === true ? (
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="name"
+                    id="name"
+                    value="Amoxicillin"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="name"
+                    id="name"
+                    readonly=""
+                    value="Amoxicillin"
+                  />
+                )}
+              </div>
               <div class="w-100 row p-0 m-0 mb-3">
                 <div class="col-6">
                   <label for="price" class="form-label">

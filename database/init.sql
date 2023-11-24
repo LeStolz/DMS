@@ -240,7 +240,10 @@ begin tran
 			id uniqueidentifier default(newid()) primary key,
 			treatmentId uniqueidentifier not null foreign key references treatment(id),
 			issueDate date not null default(getdate()),
-			total int
+			total int not null
+
+			constraint [Total must be positive.]
+				check(total > 0)
 		)
 	end try
 	begin catch
