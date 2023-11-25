@@ -40,6 +40,8 @@ dentistsRouter.get("/addTreatment", dentist, async (req, res) => {
 
 dentistsRouter.post("/addTreatment", dentist, async (req, res) => {
   // Use req.user.id to call getDentistAppointments
+  // This should be the only endpoint to handle adding treatments to ensure atomicity
+  // i.e., it calls addTreatment, addDrugToTreatment, addServiceToTreatment all at the same time
   return res.send(
     <Success fullscreen>Your treatment has been recorded.</Success>
   );

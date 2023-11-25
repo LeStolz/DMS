@@ -849,9 +849,17 @@ begin tran
 			throw 51000, 'Drug does not exist.', 1
 		end
 
+		declare @oldPrice int = (select price from drug where id = @id)
+
 		update drug
 		set name = @name, directive = @directive, price = @price, unit = @unit
 		where id = @id
+
+		update prescription
+		set total += (@price - @oldPrice) * (
+			select coalesce(sum(quantity), 0) from prescribedDrug
+			where prescriptionId = id and drugId = @id
+		)
 
 		select * from drug where id = @id
 	end try
@@ -914,7 +922,7 @@ begin tran
 			throw 51000, 'Drug batch has already expired.', 1
 		end
 
-		insert into drugBatch(drugId, expirationDate, import) values (@drugId, @exp, @import)
+		insert into drugBatch(drugId, expirationDate, import, stock) values (@drugId, @exp, @import, @import)
 
 		select * from drugBatch where drugId = @drugId and expirationDate = @exp
 	end try
@@ -1080,6 +1088,10 @@ begin tran
 
 		insert into treatedService values (@treatmentId, @serviceId)
 
+		update treatment 
+		set totalServiceCharge += (select price from service where id = @serviceId)
+		where id = @treatmentId
+
 		select ts.treatmentId, ts.serviceId, s.name
 		from treatedService ts
 		join service s on s.id = ts.serviceId
@@ -1161,6 +1173,14 @@ begin tran
 
 		insert into prescribedDrug(prescriptionId, drugId, expirationDate, dosage, quantity) values
 			(@presId, @drugId, @expirationDate, @dosage, @quantity)
+
+		update drugBatch
+		set stock -= @quantity
+		where drugId = @drugId and expirationDate = @expirationDate
+
+		update prescription
+		set total += @quantity * (select price from drug where id = @drugId)
+		where id = @presId
 
 		select pd.*, d.name from prescribedDrug pd
 		join drug d on d.id = pd.drugId

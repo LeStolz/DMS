@@ -164,7 +164,10 @@ begin tran
 			expirationDate date not null,
 			import int not null,
 			isRemoved bit not null default(0),
-			stock int,
+			stock int not null default(0),
+
+			constraint [Stock must be between import and 0.]
+				check(import >= stock and stock >= 0),
 
 			constraint [A drug batch with this drug and expiration date already exists.]
 				primary key(drugId, expirationDate),
@@ -193,7 +196,7 @@ begin tran
 
 		create table prescription(
 			id uniqueidentifier default(newid()) primary key,
-			total int
+			total int not null default(0)
 		)
 
 		alter table prescribedDrug
@@ -221,7 +224,7 @@ begin tran
 			toothTreated nvarchar(64) not null,
 			outcome nvarchar(16) not null,
 			treatmentCharge int not null,
-			totalServiceCharge int,
+			totalServiceCharge int not null default(0),
 
 			constraint [Treatment shift must be 'morning', 'afternoon' or 'evening'.]
 				check(shift in ('morning', 'afternoon', 'evening')),
@@ -253,76 +256,6 @@ commit tran
 
 go
 exec _createTables
-go
-
-create or alter function dbo._calculateServiceTotal(@treatmentId uniqueidentifier)
-returns int as
-begin
-	return (
-		select coalesce(sum(price), 0) from treatedService ts
-		join service s on ts.serviceId = s.id
-		where ts.treatmentId = @treatmentId
-	)
-end
-
-go
-
-create or alter function dbo._calculatePrescriptionTotal(@prescriptionId uniqueidentifier)
-returns int as
-begin
-	if @prescriptionId is null or not exists(select * from prescription where id = @prescriptionId)
-	begin
-		return 0
-	end
-
-	return (
-		select coalesce(sum(price * quantity), 0) from prescribedDrug pd
-		join drug d on pd.drugId = d.id
-		where pd.prescriptionId = @prescriptionId
-	)
-end
-
-go
-
-create or alter function dbo._calculateDrugStock(
-	@drugId uniqueidentifier,
-	@expirationDate date
-)
-returns int as
-begin
-	return (
-		(select import from drugBatch where drugId = @drugId and expirationDate = @expirationDate) -
-		(select coalesce(sum(quantity), 0) from prescribedDrug where drugId = @drugId and expirationDate = @expirationDate)
-	)
-end
-
-go
-
-create or alter proc _createConstraints as
-begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		alter table treatment drop column totalServiceCharge
-		alter table treatment
-		add totalServiceCharge as dbo._calculateServiceTotal(id)
-
-		alter table prescription drop column total
-		alter table prescription
-		add total as dbo._calculatePrescriptionTotal(id)
-
-		alter table drugBatch drop column stock
-		alter table drugBatch
-		add stock as dbo._calculateDrugStock(drugId, expirationDate)
-	end try
-	begin catch
-		throw
-	end catch
-commit tran
-
-go
-exec _createConstraints
 go
 
 create or alter proc getUserByCred with execute as owner
@@ -993,18 +926,14 @@ begin tran
 		declare @medoralId uniqueidentifier
 		select @medoralId = id from drug where name = 'Medoral'
 
-		insert into drugBatch(drugId, expirationDate, import) values
-			(@amoxicillinId, '2023-12-12', 10),
-			(@medoralId, '2023-12-10', 5)
+		insert into drugBatch(drugId, expirationDate, import, stock) values
+			(@amoxicillinId, '2023-12-12', 10, 10),
+			(@medoralId, '2023-12-10', 5, 5)
 
 		insert into prescription default values
 
 		declare @prescriptionId uniqueidentifier
 		select @prescriptionId = id from prescription
-
-		insert into prescribedDrug(prescriptionId, drugId, expirationDate, dosage, quantity) values
-			(@prescriptionId, @amoxicillinId, '2023-12-12', '1 pill every morning, 1 pill every afternoon', 2),
-			(@prescriptionId, @medoralId, '2023-12-10', '100ml every morning', 1)
 
 		insert into treatment(
 			dentistId, shift, date,
@@ -1014,15 +943,6 @@ begin tran
 				@dentistAId, 'afternoon', '2023-12-04',
 				@prescriptionId, 'None', 'None', 'Wisdom tooth', 'Success', 100000
 			)
-
-		declare @treatmentId uniqueidentifier
-		select @treatmentId = id from treatment where toothTreated = 'Wisdom tooth'
-
-		declare @serviceId uniqueidentifier
-		select @serviceId = id from service where name = 'Wisdom tooth extraction'
-
-		insert into treatedService(treatmentId, serviceId) values
-			(@treatmentId, @serviceId)
 	end try
 	begin catch
 		throw
