@@ -1,13 +1,19 @@
 import * as elements from "typed-html";
+import { capitalize } from "../../../utils";
 
-const DentistItem = () => {
+export type Dentist = {
+  id: string;
+  name: string;
+  phone: string;
+  gender: string;
+  url?: string;
+};
+
+const DentistItem = ({ dentist }: { dentist: Dentist }) => {
   return (
     <div class="row col-12 col-lg-6 mb-5">
       <div class="col-5 h-100">
-        <img
-          src="https://careplusvn.com/Uploads/t/ba/bac-si-duong_0000918_270.jpeg"
-          class="img-fluid rounded-top w-100"
-        />
+        <img src={dentist.url} class="img-fluid rounded-top w-100" />
         <a
           class="btn btn-primary w-100 rounded-top-0 rounded-bottom"
           href="#dates"
@@ -20,7 +26,7 @@ const DentistItem = () => {
       <div class="col">
         <div class="ml-sm-3 d-flex justify-content-between flex-column">
           <h5 class="mb-3">
-            <strong>Ths. BS. Hoàng Công Đương</strong>
+            <strong>Dr. {dentist.name}</strong>
           </h5>
           <div class="mb-3 d-flex align-items-center">
             <div class="me-3">
@@ -30,7 +36,7 @@ const DentistItem = () => {
             </div>
             <div>
               <strong>Phone</strong>
-              <p class="m-0">0036823893</p>
+              <p class="m-0">{dentist.phone}</p>
             </div>
           </div>
           <div class="mb-3 d-flex align-items-center">
@@ -41,7 +47,7 @@ const DentistItem = () => {
             </div>
             <div>
               <strong>Gender</strong>
-              <p class="m-0">Nam</p>
+              <p class="m-0">{capitalize(dentist.gender)}</p>
             </div>
           </div>
         </div>

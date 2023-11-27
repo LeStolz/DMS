@@ -1,7 +1,23 @@
 import * as elements from "typed-html";
-import ServiceItem from "./service";
+import ServiceItem, { Service } from "./service";
 
-const Services = () => {
+const Services = ({ services }: { services: Service[] }) => {
+  const urls: string[] = [
+    "https://nhakhoakim.com/wp-content/uploads/2019/05/nieng-rang-tham-my.png",
+    "https://nhakhoakim.com/wp-content/uploads/2019/05/icon-boc-rang-su-1.png",
+    "https://nhakhoakim.com/wp-content/uploads/2021/11/icon-han-tram-rang-sau-01.png",
+    "https://nhakhoakim.com/wp-content/uploads/2019/05/trong-rang-implant.png",
+    "https://nhakhoakim.com/wp-content/uploads/2019/05/rang-su-veneer.png",
+    "https://nhakhoakim.com/wp-content/uploads/2019/05/icon-benh-ly-nha-chu.png",
+    "https://nhakhoakim.com/wp-content/uploads/2019/05/dieu-tri-tuy.png",
+    "https://nhakhoakim.com/wp-content/uploads/2019/05/icon-tay-trang-rang-1.png",
+    "https://nhakhoakim.com/wp-content/uploads/2019/05/icon-nho-rang-khon-1.png",
+  ];
+
+  services.forEach((service, idx) => {
+    service.url = urls[idx];
+  });
+
   return (
     <div class="bg-white">
       <a class="scroll-link" id="services"></a>
@@ -22,16 +38,10 @@ const Services = () => {
         </div>
 
         <div class="container overflow-hidden">
-          <div class="row gy-5">
-            <ServiceItem />
-            <ServiceItem />
-            <ServiceItem />
-            <ServiceItem />
-            <ServiceItem />
-            <ServiceItem />
-            <ServiceItem />
-            <ServiceItem />
-            <ServiceItem />
+          <div class="row g-5">
+            {services.map((service) => (
+              <ServiceItem service={service} />
+            ))}
           </div>
         </div>
       </section>

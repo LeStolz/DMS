@@ -9,8 +9,16 @@ import Topbar from "../../../components/topbar";
 import { User } from "../../auth/router";
 import ContactInfo from "./contactInfo";
 import ConfirmInfo from "./confirmInfo";
+import { Dentist } from "./dentist";
+import { Service } from "./service";
 
-const Home = ({ user }: { user?: User }) => {
+type HomeProps = {
+  user?: User;
+  dentists: Dentist[];
+  services: Service[];
+};
+
+const Home = ({ user, dentists, services }: HomeProps) => {
   return (
     <Topbar user={user}>
       <div class="home not-printable">
@@ -24,8 +32,8 @@ const Home = ({ user }: { user?: User }) => {
           </div>
           <Calendar />
         </div>
-        <Dentists />
-        <Services />
+        <Dentists dentists={dentists} />
+        <Services services={services} />
       </div>
       <ContactInfo />
       <ConfirmInfo />

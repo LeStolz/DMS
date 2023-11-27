@@ -847,30 +847,28 @@ begin tran
 
 	begin try
 		insert into admin(name, password, phone) values
-			(N'Võ Nam Đăng', 'Admin12345', '0211260560'),
-			(N'Nguyễn Văn A', 'P@ssw0rd1', '5551234567')
+			(N'Võ Nam Đăng', 'Admin12345', '0211260560')
 
 		insert into staff(name, password, phone, gender) values
 			(N'Hồ Nguyễn Minh Thư', 'Staff12345', '0211260050', 'female'),
-			(N'Nguyễn Văn X', 'P@ssw0rd1', '5551234567', 'male'),
-			(N'Trần Thị Y', 'S3cr3tpwd', '5559876543', 'female')
+			(N'Trần Ngọc Diễm Châu', 'Staff12345', '0211260520', 'female')
 
 		insert into dentist(name, password, phone, gender) values
-			(N'Trần Ngọc Diễm Châu', 'Dentist12345', '0211260520', 'female'),
-			(N'Lê Hữu Z', 'securepwd1', '5557890123', 'male'),
-			(N'Phạm Thị W', 'pa$$12w0rd', '5552345678', 'female')
+			(N'Võ Nam Đăng', 'Dentist12345', '0211260560', 'male'),
+			(N'Hồ Nguyễn Minh Thư', 'Dentist12345', '0211260050', 'female'),
+			(N'Trương Hoàng Kha', 'Dentist12345', '0211260200', 'male'),
+			(N'Trần Ngọc Diễm Châu', 'Dentist12345', '0211260520', 'female')
 
 		insert into patient(name, password, phone, gender, dob, address) values
-			(N'Trương Hoàng Kha', 'Patient12345', '0211260200', 'male', '2003-01-01', N'Thành phố Hồ Chí Minh'),
-			(N'Nguyễn Thị A', 'P@ssw0rd1', '5551234567', 'female', '1990-05-15', N'123 Đường Chính, Thành phố, Quốc gia'),
-			(N'Trần Văn B', 'S3cr3tPwd', '5559876543', 'male', '1985-09-20', N'456 Phố Elm, Thị trấn, Quốc gia'),
-			(N'Lê Thị C', 'SecurePwd1', '5557890123', 'female', '1993-03-10', N'789 Đường Sồi, Làng, Quốc gia'),
-			(N'Phạm Văn D', 'Pa$$12w0rd', '5552345678', 'male', '1988-12-05', N'567 Đường Bạch, Xã, Quốc gia')
+			(N'Đoàn Ngọc Thức', 'DoanNgocThuc12345', '0211260840', 'male', '2003-12-12', N'Q. Tân Phú, TP. Hồ Chí Minh'),
+			(N'Nguyễn Trần Trung Hậu', 'NguyenTranTrungHau12345', '0211260630', 'male', '2003-09-06', N'TP. Tây Ninh'),
+			(N'Trương Hoàng Kha', 'TruongHoangKha12345', '0211260200', 'male', '2003-01-01', N'TP. Hồ Chí Minh'),
+			(N'Nguyễn Trần Bảo Khánh', 'NguyenTranBaoKhanh12345', '0211260210', 'female', '2003-01-01', N'TP. Hồ Chí Minh')
 
 		declare @dentistAId uniqueidentifier
-		select @dentistAId = id from dentist where phone = '0211260520'
+		select @dentistAId = id from dentist where phone = '0211260560'
 		declare @dentistBId uniqueidentifier
-		select @dentistBId = id from dentist where phone = '5557890123'
+		select @dentistBId = id from dentist where phone = '0211260520'
 
 		insert into dentistSchedule(dentistId, shift, date) values
 			(@dentistAId, 'morning', 1),
@@ -887,7 +885,7 @@ begin tran
 		declare @patientAId uniqueidentifier
 		select @patientAId = id from patient where phone = '0211260200'
 		declare @patientBId uniqueidentifier
-		select @patientBId = id from patient where phone = '5551234567'
+		select @patientBId = id from patient where phone = '0211260210'
 
 		insert into appointment(dentistId, patientId, shift, date, status) values
 			(@dentistAId, @patientAId, 'afternoon', '2023-12-04', 'confirmed'),

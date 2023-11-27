@@ -1,7 +1,18 @@
 import * as elements from "typed-html";
-import DentistItem from "./dentist";
+import DentistItem, { Dentist } from "./dentist";
 
-const Dentists = () => {
+const Dentists = ({ dentists }: { dentists: Dentist[] }) => {
+  const urls: string[] = [
+    "https://nhakhoakim.com/wp-content/uploads/2022/07/Ngo-Ngoc-Bao-Tram-4.jpg",
+    "https://nhakhoakim.com/wp-content/uploads/2022/07/Minhbsnhakhoakim.jpg",
+    "https://nhakhoakim.com/wp-content/uploads/2020/05/Bac-Le-Nguyen-Thanh-Tam-15.jpg",
+    "https://nhakhoakim.com/wp-content/uploads/2022/07/khangbsnhakhoakim.jpg",
+  ];
+
+  dentists.forEach((dentist, idx) => {
+    dentist.url = urls[idx];
+  });
+
   return (
     <div class="bg-white">
       <a class="scroll-link" id="dentists"></a>
@@ -23,14 +34,9 @@ const Dentists = () => {
 
         <div class="container mt-5">
           <div class="container row g-5 justify-content-between">
-            <DentistItem />
-            <DentistItem />
-            <DentistItem />
-            <DentistItem />
-            <DentistItem />
-            <DentistItem />
-            <DentistItem />
-            <DentistItem />
+            {dentists.map((dentist) => (
+              <DentistItem dentist={dentist} />
+            ))}
           </div>
         </div>
       </section>

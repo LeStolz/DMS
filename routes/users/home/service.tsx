@@ -1,23 +1,39 @@
 import * as elements from "typed-html";
+import { formatPrice } from "../../../utils";
 
-const ServiceItem = () => {
+export type Service = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  url?: string;
+};
+
+const ServiceItem = ({ service }: { service: Service }) => {
   return (
-    <div class="col-12 col-sm-6 col-lg-4">
-      <div class="px-xl-2">
-        <div class="row">
-          <div class="col-4 d-flex justify-content-center">
-            <div class="bg-black border border-2 border-warning icon-h-lg icon-w-lg d-flex justify-content-center align-items-center rounded-circle text-white fs-3">
-              <i class="bi bi-amazon"></i>
-            </div>
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="row d-flex justify-content-center mb-2">
+        <div class="d-flex justify-content-center">
+          <div class="position-relative icon-w-xl icon-h-xl rounded-circle border border-warning">
+            <img class="position-absolute-center" src={service.url}></img>
           </div>
-          <div class="col-8">
-            <h5>Web Development</h5>
-            <h6>1000000000 đ</h6>
-            <p class="m-0 text-secondary">
-              Vestibulum bibendum, lorem a blandit lacinia, nisi velit posuere
-              nisl, vel placerat magna mauris mollis maximus est.
-            </p>
-          </div>
+        </div>
+      </div>
+      <div class="row text-center">
+        <h4>{service.name}</h4>
+        <h6>{formatPrice(service.price)}</h6>
+        <a
+          class="link-primary mb-2"
+          data-toggle="collapse"
+          href={`#collapse-${service.name}`}
+          role="button"
+          aria-expanded="false"
+          aria-controls={`collapse-${service.name}`}
+        >
+          More Info
+        </a>
+        <div class="collapse" id={`collapse-${service.name}`}>
+          <div class="card card-body text-start">{service.description}</div>
         </div>
       </div>
     </div>

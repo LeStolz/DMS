@@ -1,14 +1,6 @@
 import { randomInt } from "crypto";
 import * as elements from "typed-html";
 
-function formatDate(date: Date) {
-  const dateString = date.toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-  });
-  return dateString.charAt(0).toUpperCase() + dateString.slice(1);
-}
-
 const Calendar = () => {
   let date = new Date();
   date.setDate(1);
