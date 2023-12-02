@@ -941,6 +941,28 @@ begin tran
 				@dentistAId, 'afternoon', '2023-12-04',
 				@prescriptionId, 'None', 'None', 'Wisdom tooth', 'Success', 100000
 			)
+
+		declare @treatmentId uniqueidentifier
+		select @treatmentId = id from treatment
+		declare @serviceId uniqueidentifier
+		select @serviceId = id from service
+
+		insert into treatedService values (@treatmentId, @serviceId)
+
+		update treatment
+		set totalServiceCharge += (select price from service where id = @serviceId)
+		where id = @treatmentId
+
+		insert into prescribedDrug(prescriptionId, drugId, expirationDate, dosage, quantity) values
+			(@prescriptionId,@amoxicillinId, '2023-12-12', '1 pill after breakfast', 3)
+
+		update drugBatch
+		set stock -= 3
+		where drugId = @amoxicillinId and expirationDate = '2023-12-12'
+
+		update prescription
+		set total += 3 * (select price from drug where id = @amoxicillinId)
+		where id = @prescriptionId
 	end try
 	begin catch
 		throw

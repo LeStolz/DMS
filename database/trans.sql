@@ -592,7 +592,7 @@ begin tran
 					for json path, include_null_values
 				) as [services],
 				(
-					select d.name, d.price, pd.quantity, pd.dosage, pd.expirationDate from prescription ps
+					select d.id, d.name, d.price, d.unit, pd.quantity, pd.dosage, pd.expirationDate from prescription ps
 					join prescribedDrug pd on pd.prescriptionId = ps.id
 					join drug d on d.id = pd.drugId
 					where t.prescriptionId = ps.id
@@ -743,6 +743,7 @@ begin tran
 			(
 				select db.stock, db.expirationDate from drugBatch db
 				where db.drugId = d.id and db.isRemoved = 0
+				order by db.expirationDate
 				for json path, include_null_values
 			) as [drugBatches]
 		from drug d

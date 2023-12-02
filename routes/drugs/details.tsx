@@ -67,7 +67,7 @@ const Details = ({ scrud, drug }: DetailsProps) => {
             {drug.directive}
           </textarea>
         ) : (
-          <p class="fw-bold">{drug.directive}</p>
+          <p class="fw-bold my-2">{drug.directive}</p>
         )}
       </div>
       <div class="mb-3">

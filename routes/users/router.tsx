@@ -7,7 +7,6 @@ import Topbar from "../../components/topbar";
 import ProfileSettings from "../../components/profileSettings";
 import TreatmentHistory from "./treatmentHistory";
 import Warning from "../../components/warning";
-import DrugInfoModal from "../drugs/drugInfoModal";
 import { parseSqlJson } from "../../utils";
 import { Dentist, Service, Treatment, User } from "../../types";
 
@@ -78,7 +77,6 @@ usersRouter.get("/profile", patient, async (req, res) => {
       <div>
         <ProfileSettings user={req.user!} />
         <TreatmentHistory treatments={treatments} />
-        <DrugInfoModal />
       </div>
     </Topbar>
   );

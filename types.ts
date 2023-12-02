@@ -43,6 +43,7 @@ export type Drug = {
 };
 
 export type DrugBatch = {
+  id?: string;
   name: string;
   price: number;
   quantity: number;

@@ -148,7 +148,11 @@ const TabContents = ({
             </tr>
           </thead>
           <tbody>
-            {treatment.services &&
+            {treatment.services == null ? (
+              <tr class="text-center">
+                <td colspan={5}>No service found</td>
+              </tr>
+            ) : (
               treatment.services.map((service) => (
                 <tr>
                   <td>
@@ -159,7 +163,8 @@ const TabContents = ({
                     </p>
                   </td>
                 </tr>
-              ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -188,20 +193,15 @@ const TabContents = ({
             </tr>
           </thead>
           <tbody>
-            {treatment.drugs &&
+            {treatment.drugs == null ? (
+              <tr class="text-center">
+                <td colspan={5}>No drug found</td>
+              </tr>
+            ) : (
               treatment.drugs.map((drug) => (
                 <tr>
                   <td>
-                    <p class="d-flex align-items-center m-0">
-                      <a
-                        role="button"
-                        data-toggle="modal"
-                        data-target="#drugInfoModalModal"
-                        class="link-primary"
-                      >
-                        {drug.name}
-                      </a>
-                    </p>
+                    <p class="d-flex align-items-center m-0">{drug.name}</p>
                   </td>
                   <td>
                     <p class="d-flex align-items-center m-0">{drug.quantity}</p>
@@ -215,7 +215,8 @@ const TabContents = ({
                     </p>
                   </td>
                 </tr>
-              ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -229,36 +230,40 @@ const TreatmentHistory = ({ treatments }: { treatments: Treatment[] }) => {
       <div class="pb-5 w-100">
         <h1>Treatment History</h1>
         <div class="accordion w-100" id="treatmentsAccordion">
-          {treatments.map((treatment, idx) => (
-            <div class="accordion-item">
-              <h2 class="accordion-header">
-                <button
-                  class="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  aria-expanded="false"
-                  data-bs-target={`#collapse-${idx}`}
-                  aria-controls={`collapse-${idx}`}
+          {treatments == null ? (
+            <p>No treatment found</p>
+          ) : (
+            treatments.map((treatment, idx) => (
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button
+                    class="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    aria-expanded="false"
+                    data-bs-target={`#collapse-${idx}`}
+                    aria-controls={`collapse-${idx}`}
+                  >
+                    <p class="m-0 p-0 me-3">
+                      {capitalize(treatment.shift)} ·{" "}
+                      {formatShortDate(treatment.date)} · Dr.{" "}
+                      {treatment.dentist[0].name}
+                    </p>
+                  </button>
+                </h2>
+                <div
+                  id={`collapse-${idx}`}
+                  class="accordion-collapse collapse"
+                  data-bs-parent="#treatmentsAccordion"
                 >
-                  <p class="m-0 p-0 me-3">
-                    {capitalize(treatment.shift)} ·{" "}
-                    {formatShortDate(treatment.date)} · Dr.{" "}
-                    {treatment.dentist[0].name}
-                  </p>
-                </button>
-              </h2>
-              <div
-                id={`collapse-${idx}`}
-                class="accordion-collapse collapse"
-                data-bs-parent="#treatmentsAccordion"
-              >
-                <div class="accordion-body d-flex align-items-start">
-                  <Tabs id={idx} />
-                  <TabContents id={idx} treatment={treatment} />
+                  <div class="accordion-body d-flex align-items-start">
+                    <Tabs id={idx} />
+                    <TabContents id={idx} treatment={treatment} />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
