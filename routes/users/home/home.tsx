@@ -6,11 +6,9 @@ import Dentists from "./dentists";
 import Services from "./services";
 import Nav from "./nav";
 import Topbar from "../../../components/topbar";
-import { User } from "../../auth/router";
 import ContactInfo from "./contactInfo";
 import ConfirmInfo from "./confirmInfo";
-import { Dentist } from "./dentist";
-import { Service } from "./service";
+import { Dentist, Service, User } from "../../../types";
 
 type HomeProps = {
   user?: User;
@@ -21,22 +19,24 @@ type HomeProps = {
 const Home = ({ user, dentists, services }: HomeProps) => {
   return (
     <Topbar user={user}>
-      <div class="home not-printable">
-        <Banner />
-        <About />
-        <Nav />
-        <a class="scroll-link" id="dates"></a>
-        <div class="mx-5 my-3">
-          <div class="text-center m-0 pt-4 bg-white">
-            <h1 class={`m-0`}>Book Appointment</h1>
+      <div>
+        <div class="home not-printable">
+          <Banner />
+          <About />
+          <Nav />
+          <a class="scroll-link" id="dates"></a>
+          <div class="mx-5 my-3">
+            <div class="text-center m-0 pt-4 bg-white">
+              <h1 class={`m-0`}>Book Appointment</h1>
+            </div>
+            <Calendar />
           </div>
-          <Calendar />
+          <Dentists dentists={dentists} />
+          <Services services={services} />
         </div>
-        <Dentists dentists={dentists} />
-        <Services services={services} />
+        <ContactInfo />
+        <ConfirmInfo />
       </div>
-      <ContactInfo />
-      <ConfirmInfo />
     </Topbar>
   );
 };

@@ -1,13 +1,6 @@
 import * as elements from "typed-html";
 import { capitalize } from "../../../utils";
-
-export type Dentist = {
-  id: string;
-  name: string;
-  phone: string;
-  gender: string;
-  url?: string;
-};
+import { Dentist } from "../../../types";
 
 const DentistItem = ({ dentist }: { dentist: Dentist }) => {
   return (

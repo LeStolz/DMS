@@ -212,3 +212,15 @@ textarea:read-only {
   padding-right: 0;
   border: var(--bs-border-width) solid transparent;
 }
+
+.htmx-request #status {
+  display: none;
+}
+
+#status + .htmx-indicator {
+  display: none;
+}
+
+.htmx-request #status + .htmx-indicator {
+  display: inline-block;
+}

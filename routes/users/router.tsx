@@ -2,10 +2,14 @@ import { Router } from "express";
 import * as elements from "typed-html";
 import Home from "./home/home";
 import Success from "../../components/success";
-import Profile from "./profile/profile";
 import { patient } from "../auth/router";
-import { Dentist } from "./home/dentist";
-import { Service } from "./home/service";
+import Topbar from "../../components/topbar";
+import ProfileSettings from "../../components/profileSettings";
+import TreatmentHistory from "./treatmentHistory";
+import Warning from "../../components/warning";
+import DrugInfoModal from "../drugs/drugInfoModal";
+import { parseSqlJson } from "../../utils";
+import { Dentist, Service, Treatment, User } from "../../types";
 
 const usersRouter = Router();
 
@@ -47,9 +51,37 @@ usersRouter.get("/", async (req, res) => {
 });
 
 usersRouter.get("/profile", patient, async (req, res) => {
-  // Use req.user.id to call getPatientDetails
+  let treatments: Treatment[] = [];
 
-  return res.send(<Profile user={req.user} />);
+  try {
+    const patientDetails = await parseSqlJson(
+      (
+        await (await req.db())
+          .input("id", req.user?.id)
+          .execute("getPatientDetails")
+      ).recordset[0]
+    );
+
+    treatments = patientDetails.treatments;
+  } catch {
+    return res.send(
+      <Topbar user={req.user}>
+        <Warning fullscreen>
+          You must be logged in as a patient to view your profile.
+        </Warning>
+      </Topbar>
+    );
+  }
+
+  return res.send(
+    <Topbar user={req.user}>
+      <div>
+        <ProfileSettings user={req.user!} />
+        <TreatmentHistory treatments={treatments} />
+        <DrugInfoModal />
+      </div>
+    </Topbar>
+  );
 });
 
 usersRouter.post("/makeAppointment", async (req, res) => {
@@ -61,7 +93,33 @@ usersRouter.post("/makeAppointment", async (req, res) => {
 });
 
 usersRouter.put("/updatePatient", patient, async (req, res) => {
-  // Use req.user.id to call updatePatient
+  try {
+    const input = req.body;
+
+    const user: User = (
+      await (await req.db())
+        .input("id", req.user?.id)
+        .input("name", `${input.lastName} ${input.firstName}`)
+        .input("phone", input.phone)
+        .input("gender", input.gender)
+        .input("dob", input.dob)
+        .input("address", input.address)
+        .execute("updatePatient")
+    ).recordset[0];
+
+    if (user.phone !== req.user?.phone) {
+      return res.header("HX-Redirect", "/users").end();
+    }
+
+    return res.send(<i class="bi bi-check-lg"></i>);
+  } catch (error: any) {
+    if (error instanceof Error) {
+      console.error(error.message);
+      return res.status(400).send(error.message.split("'.")[0].split("'")[1]);
+    }
+
+    return res.status(500).send("Update failed. Please try again later.");
+  }
 });
 
 export default usersRouter;

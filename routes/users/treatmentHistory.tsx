@@ -1,5 +1,6 @@
 import * as elements from "typed-html";
-import DrugInfoModal from "../../drugs/drugInfoModal";
+import { Treatment } from "../../types";
+import { capitalize, formatShortDate } from "../../utils";
 
 const Tabs = ({ id }: { id: number }) => {
   return (
@@ -68,7 +69,13 @@ const Tabs = ({ id }: { id: number }) => {
   );
 };
 
-const TabContents = ({ id }: { id: number }) => {
+const TabContents = ({
+  id,
+  treatment,
+}: {
+  id: number;
+  treatment: Treatment;
+}) => {
   return (
     <div class="tab-content table-responsive" id="pills-tabContent">
       <div
@@ -82,25 +89,21 @@ const TabContents = ({ id }: { id: number }) => {
           <strong class="text-secondary">
             <i class="bi bi-calendar"></i> Time:{" "}
           </strong>
-          <span>Morning · 10/10/2023</span>
+          <span>
+            {capitalize(treatment.shift)} · {formatShortDate(treatment.date)}
+          </span>
         </div>
         <div class="mb-3">
           <strong class="text-secondary">
             <i class="bi bi-bandaid"></i> Tooth treated:{" "}
           </strong>
-          <span>Wisdom tooth</span>
+          <span>{treatment.toothTreated}</span>
         </div>
         <div class="mb-3">
           <strong class="text-secondary">
             <i class="bi bi-journal"></i> Note:{" "}
           </strong>
-          <span>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            Dignissimos, voluptates adipisci exercitationem, dolore odio
-            eligendi animi ipsum possimus dolor reprehenderit repellendus
-            architecto aspernatur error consectetur commodi numquam id dolorem.
-            Eaque?
-          </span>
+          <span>{treatment.notes}</span>
         </div>
       </div>
       <div
@@ -114,19 +117,19 @@ const TabContents = ({ id }: { id: number }) => {
           <strong class="text-secondary">
             <i class="bi bi-person"></i> Name:{" "}
           </strong>
-          <span>Ths. BS. Hoàng Công Đương</span>
+          <span>Dr. {treatment.dentist[0].name}</span>
         </div>
         <div class="mb-3">
           <strong class="text-secondary">
             <i class="bi bi-telephone"></i> Phone:{" "}
           </strong>
-          <span>0905842490</span>
+          <span>{treatment.dentist[0].phone}</span>
         </div>
         <div class="mb-3">
           <strong class="text-secondary">
             <i class="bi bi-gender-ambiguous"></i> Gender:{" "}
           </strong>
-          <span>Male</span>
+          <span>{capitalize(treatment.dentist[0].gender)}</span>
         </div>
       </div>
       <div
@@ -145,17 +148,18 @@ const TabContents = ({ id }: { id: number }) => {
             </tr>
           </thead>
           <tbody>
-            {["Wisdom Teeth Removal", "Dental Crowning"].map((service) => (
-              <tr>
-                <td>
-                  <p class="d-flex align-items-center m-0">
-                    <a class="link-primary" href="/users#services">
-                      {service}
-                    </a>
-                  </p>
-                </td>
-              </tr>
-            ))}
+            {treatment.services &&
+              treatment.services.map((service) => (
+                <tr>
+                  <td>
+                    <p class="d-flex align-items-center m-0">
+                      <a class="link-primary" href="/users#services">
+                        {service.name}
+                      </a>
+                    </p>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
@@ -184,48 +188,48 @@ const TabContents = ({ id }: { id: number }) => {
             </tr>
           </thead>
           <tbody>
-            {["Amoxicillin", "Aspirin"].map((drug) => (
-              <tr>
-                <td>
-                  <p class="d-flex align-items-center m-0">
-                    <a
-                      role="button"
-                      data-toggle="modal"
-                      data-target="#drugInfoModalModal"
-                      class="link-primary"
-                    >
-                      {drug}
-                    </a>
-                  </p>
-                </td>
-                <td>
-                  <p class="d-flex align-items-center m-0">2 tablets</p>
-                </td>
-                <td>
-                  <p class="d-flex align-items-center m-0">
-                    2 pills/morning. 2 pills/afternoon.
-                  </p>
-                </td>
-                <td>
-                  <p class="d-flex align-items-center m-0">30/12/2023</p>
-                </td>
-              </tr>
-            ))}
+            {treatment.drugs &&
+              treatment.drugs.map((drug) => (
+                <tr>
+                  <td>
+                    <p class="d-flex align-items-center m-0">
+                      <a
+                        role="button"
+                        data-toggle="modal"
+                        data-target="#drugInfoModalModal"
+                        class="link-primary"
+                      >
+                        {drug.name}
+                      </a>
+                    </p>
+                  </td>
+                  <td>
+                    <p class="d-flex align-items-center m-0">{drug.quantity}</p>
+                  </td>
+                  <td>
+                    <p class="d-flex align-items-center m-0">{drug.dosage}</p>
+                  </td>
+                  <td>
+                    <p class="d-flex align-items-center m-0">
+                      {formatShortDate(drug.expirationDate)}
+                    </p>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
-        <DrugInfoModal />
       </div>
     </div>
   );
 };
 
-const TreatmentHistory = () => {
+const TreatmentHistory = ({ treatments }: { treatments: Treatment[] }) => {
   return (
     <div class="d-flex flex-column px-5">
       <div class="pb-5 w-100">
         <h1>Treatment History</h1>
         <div class="accordion w-100" id="treatmentsAccordion">
-          {[1, 2, 3, 4, 5].map((_, idx) => (
+          {treatments.map((treatment, idx) => (
             <div class="accordion-item">
               <h2 class="accordion-header">
                 <button
@@ -237,7 +241,9 @@ const TreatmentHistory = () => {
                   aria-controls={`collapse-${idx}`}
                 >
                   <p class="m-0 p-0 me-3">
-                    Morning · 10/10/2023 · Ths. BS. Hoàng Công Đương
+                    {capitalize(treatment.shift)} ·{" "}
+                    {formatShortDate(treatment.date)} · Dr.{" "}
+                    {treatment.dentist[0].name}
                   </p>
                 </button>
               </h2>
@@ -248,7 +254,7 @@ const TreatmentHistory = () => {
               >
                 <div class="accordion-body d-flex align-items-start">
                   <Tabs id={idx} />
-                  <TabContents id={idx} />
+                  <TabContents id={idx} treatment={treatment} />
                 </div>
               </div>
             </div>

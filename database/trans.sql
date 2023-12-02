@@ -64,7 +64,7 @@ begin tran
 			throw 51000, 'Phone is required.', 1
 		end
 
-		if not exists(		
+		if not exists(
 			select * from patient
 			where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
 		)
@@ -475,7 +475,7 @@ begin tran
 
 		insert into appointment values(@dentistId, @patientId, @shift, @date, 'pending')
 
-		select * from appointment 
+		select * from appointment
 		where dentistId = @dentistId and shift = @shift and date = @date
 	end try
 	begin catch
@@ -523,6 +523,7 @@ go
 create or alter proc updatePatient(
 	@id uniqueidentifier,
 	@name nvarchar(64),
+	@phone nchar(10),
 	@gender nvarchar(8),
 	@dob date,
 	@address nvarchar(128)
@@ -532,7 +533,7 @@ begin tran
 	set nocount on
 
 	begin try
-		if @id is null or @name is null or @gender is null or @dob is null or @address is null
+		if @id is null or @name is null or @phone is null or @gender is null or @dob is null or @address is null
 		begin;
 			throw 51000, 'All parameters are required.', 1
 		end
@@ -543,10 +544,10 @@ begin tran
 		end
 
 		update patient
-		set name = @name, gender = @gender, dob = @dob, address = @address
+		set name = @name, phone = @phone, gender = @gender, dob = @dob, address = @address
 		where id = @id
-		
-		select id, name, gender, dob, address from patient where id = @id
+
+		select id, name, phone, gender, dob, address from patient where id = @id
 	end try
 	begin catch
 		throw
@@ -1088,7 +1089,7 @@ begin tran
 
 		insert into treatedService values (@treatmentId, @serviceId)
 
-		update treatment 
+		update treatment
 		set totalServiceCharge += (select price from service where id = @serviceId)
 		where id = @treatmentId
 
@@ -1125,7 +1126,7 @@ begin tran
 		begin;
 			throw 51000, 'Treatment does not exist.', 1
 		end
-		
+
 		if exists(select * from invoice where treatmentId = @treatmentId)
 		begin;
 			throw 51000, 'Treatment cannot be altered as it has already been invoiced.', 1

@@ -1,5 +1,6 @@
 import * as elements from "typed-html";
-import DentistItem, { Dentist } from "./dentist";
+import DentistItem from "./dentist";
+import { Dentist } from "../../../types";
 
 const Dentists = ({ dentists }: { dentists: Dentist[] }) => {
   const urls: string[] = [

@@ -1,13 +1,6 @@
 import * as elements from "typed-html";
 import { formatPrice } from "../../../utils";
-
-export type Service = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  url?: string;
-};
+import { Service } from "../../../types";
 
 const ServiceItem = ({ service }: { service: Service }) => {
   return (

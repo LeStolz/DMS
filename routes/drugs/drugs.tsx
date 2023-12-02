@@ -9,11 +9,22 @@ const Drugs = ({ scrud = false }: { scrud?: boolean }) => {
       <h1>Drugs</h1>
       <form>
         <div class="input-group my-3">
-          <input type="text" class="form-control" placeholder="Amoxicillin" />
-          <button class="btn btn-primary">
+          <input
+            autocomplete="off"
+            name="name"
+            type="search"
+            hx-post="/drugs/search"
+            hx-trigger="input changed delay:100ms, search, load"
+            hx-target="#drug-search-result"
+            hx-swap="outerHTML"
+            class="form-control"
+            placeholder="Amoxicillin"
+          />
+          <button type="button" class="btn btn-primary">
             <i class="bi bi-search"></i>
           </button>
         </div>
+        <input name="scrud" type="hidden" value={scrud ? "true" : "false"} />
       </form>
       <table class="table">
         <thead>
@@ -23,53 +34,9 @@ const Drugs = ({ scrud = false }: { scrud?: boolean }) => {
             {scrud === true ? <th scope="col">Action</th> : ""}
           </tr>
         </thead>
-        <tbody>
-          {["Amoxicillin", "Aspirin", "Cephalexin", "Azithromycin"].map(
-            (drug) => (
-              <tr class="align-middle">
-                <td>
-                  <a
-                    role="button"
-                    data-toggle="modal"
-                    data-target="#drugInfoModalModal"
-                    class="link-primary"
-                  >
-                    {drug}
-                  </a>
-                </td>
-                <td>{drug.slice(0, 3).toUpperCase()}</td>
-                {scrud === true ? (
-                  <td>
-                    <button class="btn btn-danger text-white">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </td>
-                ) : (
-                  ""
-                )}
-              </tr>
-            )
-          )}
-          {scrud === true ? (
-            <tr>
-              <td colspan={5}>
-                <button
-                  class="btn btn-primary w-100"
-                  type="button"
-                  data-dismiss="modal"
-                  data-toggle="modal"
-                  data-target="#addDrugModal"
-                >
-                  <i class="bi bi-plus"></i> Drug
-                </button>
-              </td>
-            </tr>
-          ) : (
-            ""
-          )}
-        </tbody>
+        <tbody id="drug-search-result"></tbody>
       </table>
-      <DrugInfoModal scrud={scrud} />
+      <DrugInfoModal />
       <DrugBatchInfo />
       <AddDrug />
     </div>

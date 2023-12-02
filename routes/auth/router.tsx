@@ -7,25 +7,12 @@ import Signup from "./signup";
 import Login from "./login";
 import Warning from "../../components/warning";
 import Topbar from "../../components/topbar";
+import { User } from "../../types";
 
 const cookieOptions = {
   secure: true,
   httpOnly: true,
   signed: true,
-};
-
-export type User = {
-  id: number;
-  name: string;
-  password: string;
-  phone: string;
-
-  gender?: string;
-  isLocked?: boolean;
-  dob?: Date;
-  address?: string;
-
-  role: DbName;
 };
 
 declare global {

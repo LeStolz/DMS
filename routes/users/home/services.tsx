@@ -1,5 +1,6 @@
 import * as elements from "typed-html";
-import ServiceItem, { Service } from "./service";
+import ServiceItem from "./service";
+import { Service } from "../../../types";
 
 const Services = ({ services }: { services: Service[] }) => {
   const urls: string[] = [

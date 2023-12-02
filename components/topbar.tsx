@@ -1,6 +1,6 @@
 import * as elements from "typed-html";
 import BaseHtml from "./baseHtml";
-import { User } from "../routes/auth/router";
+import { User } from "../types";
 
 const Topbar = ({ children, user }: elements.Children & { user?: User }) => {
   const tabsByRoles = {

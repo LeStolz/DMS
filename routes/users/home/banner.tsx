@@ -2,7 +2,7 @@ import * as elements from "typed-html";
 
 const Banner = () => {
   return (
-    <div class="container-fluid p-5 bg-white">
+    <div class="container-fluid p-5 pb-3 bg-white">
       <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
         <div class="d-none d-lg-block col-0 col-lg-6">
           <img

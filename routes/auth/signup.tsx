@@ -47,7 +47,6 @@ const Signup = () => {
                         placeholder="A"
                         required=""
                       />
-                      <div class="valid-feedback">Looks good!</div>
                       <div class="invalid-feedback">
                         First name must not be empty.
                       </div>
@@ -64,7 +63,6 @@ const Signup = () => {
                         placeholder="Nguyen Van"
                         required=""
                       />
-                      <div class="valid-feedback">Looks good!</div>
                       <div class="invalid-feedback">
                         Last name must not be empty.
                       </div>
@@ -85,7 +83,6 @@ const Signup = () => {
                     placeholder="********"
                     required=""
                   />
-                  <div class="valid-feedback">Looks good!</div>
                   <div class="invalid-feedback">
                     Password must contain lowercases, uppercases and digits and
                     must be at least 8 long.
@@ -104,7 +101,6 @@ const Signup = () => {
                     placeholder="0901234567"
                     required=""
                   />
-                  <div class="valid-feedback">Looks good!</div>
                   <div class="invalid-feedback">
                     Phone must contain only digits and have a length of 10.
                   </div>
@@ -124,7 +120,6 @@ const Signup = () => {
                     required=""
                     max={new Date().toISOString().split("T")[0]}
                   />
-                  <div class="valid-feedback">Looks good!</div>
                   <div class="invalid-feedback">
                     Date of birth must be before today.
                   </div>
@@ -177,7 +172,6 @@ const Signup = () => {
                     id="address"
                     rows="3"
                   ></textarea>
-                  <div class="valid-feedback">Looks good!</div>
                   <div class="invalid-feedback">Address must not be empty.</div>
                 </div>
                 <div class="d-grid gap-2">

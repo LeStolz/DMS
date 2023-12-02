@@ -49,7 +49,6 @@ const Login = () => {
                     placeholder="0901234567"
                     required=""
                   />
-                  <div class="valid-feedback">Looks good!</div>
                   <div class="invalid-feedback">
                     Phone must contain only digits and have a length of 10.
                   </div>
@@ -68,7 +67,6 @@ const Login = () => {
                     placeholder="********"
                     required=""
                   />
-                  <div class="valid-feedback">Looks good!</div>
                   <div class="invalid-feedback">
                     Password must contain lowercases, uppercases and digits and
                     must be at least 8 long.

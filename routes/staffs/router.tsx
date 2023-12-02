@@ -19,8 +19,10 @@ staffsRouter.get("/patients", staff, async (req, res) => {
 staffsRouter.get("/addInvoice", staff, async (req, res) => {
   return res.send(
     <Topbar user={req.user}>
-      <AddInvoice />
-      <Invoice />
+      <div>
+        <AddInvoice />
+        <Invoice />
+      </div>
     </Topbar>
   );
 });

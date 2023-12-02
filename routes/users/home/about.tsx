@@ -3,7 +3,7 @@ import * as elements from "typed-html";
 const About = () => {
   return (
     <div class="bg-white text-center">
-      <div class="p-5">
+      <div class="p-5 pt-3">
         <div class="w-25 border-top border-5 border-primary mx-auto mb-3"></div>
         <div>
           <h1>About Us</h1>

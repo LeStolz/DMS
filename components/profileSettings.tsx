@@ -1,59 +1,109 @@
 import * as elements from "typed-html";
+import { User } from "../types";
 
-const ProfileSettings = ({ update = true }: { update?: boolean }) => {
+type ProfileSettingsProps = {
+  update?: boolean;
+  user?: User;
+};
+
+const ProfileSettings = ({ update = true, user }: ProfileSettingsProps) => {
+  const firstName = user?.name.split(" ").at(-1);
+  const lastName = user?.name.split(" ").slice(0, -1).join(" ");
+
   return (
     <div class="m-5 max-w-xl">
       <div>
         <h1>Profile</h1>
       </div>
-      <form>
-        <div class="row mb-3">
-          <div class="col-6">
-            <label for="first-name" class="form-label">
-              First Name
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              name="name"
-              id="first-name"
-              placeholder="A"
-              value="A"
-            />
-          </div>
-          <div class="col-6">
-            <label for="last-name" class="form-label">
-              Last Name
-            </label>
-            <input
-              type="text"
-              class="form-control"
-              name="name"
-              id="last-name"
-              placeholder="Nguyen Van"
-              value="Nguyen Van"
-            />
+      <form
+        hx-put="/users/updatePatient"
+        hx-target-error="#error"
+        hx-target="#status"
+        class="needs-validation"
+        novalidate
+        hx-on="
+          htmx:before-request:
+            if (!this.checkValidity()) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            this.classList.add('was-validated');
+          "
+      >
+        <div class="mb-3">
+          <div class="row">
+            <div class="col-6">
+              <label for="firstName" class="form-label">
+                First Name
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                name="firstName"
+                id="firstName"
+                placeholder={firstName}
+                value={firstName}
+                required=""
+              />
+              <div class="invalid-feedback">First name must not be empty.</div>
+            </div>
+            <div class="col-6">
+              <label for="lastName" class="form-label">
+                Last Name
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                name="lastName"
+                id="lastName"
+                placeholder={lastName}
+                value={lastName}
+                required=""
+              />
+              <div class="invalid-feedback">Last name must not be empty.</div>
+            </div>
           </div>
         </div>
-        <div class="row mb-3">
-          <div class="col-6">
-            <label for="phone" class="form-label">
-              Phone
-            </label>
-            <input
-              type="phone"
-              class="form-control"
-              name="phone"
-              id="phone"
-              placeholder="0901234567"
-              value="0901234567"
-            />
+        <div class="mb-3">
+          <label for="phone" class="form-label">
+            Phone
+          </label>
+          <input
+            type="phone"
+            pattern="[0-9]{10}"
+            class="form-control"
+            name="phone"
+            id="phone"
+            placeholder={user?.phone}
+            value={user?.phone}
+            required=""
+          />
+          <div class="invalid-feedback">
+            Phone must contain only digits and have a length of 10.
           </div>
-          <div class="col-6">
-            <label for="dob" class="form-label">
-              Date of birth
-            </label>
-            <input type="date" class="form-control" name="dob" id="dob" />
+          {update === true ? (
+            <span class="form-text">
+              You will be logged out if you change your phone number.
+            </span>
+          ) : (
+            ""
+          )}
+        </div>
+        <div class="mb-3">
+          <label for="dob" class="form-label">
+            Date of birth
+          </label>
+          <input
+            type="date"
+            class="form-control"
+            name="dob"
+            id="dob"
+            required=""
+            value={user?.dob?.toISOString().split("T")[0]}
+            max={new Date().toISOString().split("T")[0]}
+          />
+          <div class="invalid-feedback">
+            Date of birth must be before today.
           </div>
         </div>
         <div>
@@ -68,6 +118,9 @@ const ProfileSettings = ({ update = true }: { update?: boolean }) => {
                   type="radio"
                   name="gender"
                   id="female"
+                  required=""
+                  value="female"
+                  checked={user?.gender === "female"}
                 />
                 <label class="form-check-label" for="female">
                   Female
@@ -79,7 +132,9 @@ const ProfileSettings = ({ update = true }: { update?: boolean }) => {
                   type="radio"
                   name="gender"
                   id="male"
-                  checked
+                  checked={user?.gender === "male"}
+                  required=""
+                  value="male"
                 />
                 <label class="form-check-label" for="male">
                   Male
@@ -93,21 +148,31 @@ const ProfileSettings = ({ update = true }: { update?: boolean }) => {
             Address
           </label>
           <textarea
+            required=""
             class="form-control"
             name="address"
             id="address"
             rows="3"
-          ></textarea>
+          >
+            {user?.address}
+          </textarea>
+          <div class="invalid-feedback">Address must not be empty.</div>
         </div>
-        <div class="d-grid gap-2">
-          {update === true ? (
+        {update === true ? (
+          <div class="d-grid gap-2">
             <button type="submit" class="btn btn-danger text-white">
               Update
+              <span id="status" role="status"></span>
+              <span
+                class="htmx-indicator spinner-border spinner-border-sm"
+                role="status"
+              />
             </button>
-          ) : (
-            ""
-          )}
-        </div>
+            <div id="error" class="invalid-feedback d-block"></div>
+          </div>
+        ) : (
+          ""
+        )}
       </form>
     </div>
   );
