@@ -364,6 +364,21 @@ commit tran
 
 go
 
+create or alter proc unlockUser as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		throw
+	end catch
+commit tran
+
+go
+
 create or alter proc getDentists as
 begin tran
 	set xact_abort on
@@ -823,6 +838,7 @@ begin tran
 		grant exec on dbo.createDentist to admins
 		grant exec on dbo.getUsers to admins
 		grant exec on dbo.lockUser to admins
+		grant exec on dbo.unlockUser to admins
 
 		grant exec on dbo.updatePatient to patients
 		grant exec on dbo.getPatientDetails to patients

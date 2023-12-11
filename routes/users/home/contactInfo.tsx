@@ -170,7 +170,7 @@ const ContactInfo = () => {
                   data-toggle="modal"
                   data-dismiss="modal"
                   data-target="#confirmInfoModal"
-                  class="close btn btn-danger text-white fw-bold fs-5 py-2 px-5 rounded-md"
+                  class="close btn btn-danger text-white fs-5 py-2 px-5 rounded-md"
                 >
                   Next
                 </button>

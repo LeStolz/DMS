@@ -7,7 +7,7 @@ import Topbar from "../../components/topbar";
 import ProfileSettings from "../../components/profileSettings";
 import TreatmentHistory from "./treatmentHistory";
 import Warning from "../../components/warning";
-import { parseSqlJson } from "../../utils";
+import { formatError, parseSqlJson } from "../../utils";
 import { Dentist, Service, Treatment, User } from "../../types";
 
 const usersRouter = Router();
@@ -112,8 +112,7 @@ usersRouter.put("/updatePatient", patient, async (req, res) => {
     return res.send(<i class="bi bi-check-lg"></i>);
   } catch (error: any) {
     if (error instanceof Error) {
-      console.error(error.message);
-      return res.status(400).send(error.message.split("'.")[0].split("'")[1]);
+      return res.status(400).send(formatError(error.message));
     }
 
     return res.status(500).send("Update failed. Please try again later.");

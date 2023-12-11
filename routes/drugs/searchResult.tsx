@@ -9,23 +9,6 @@ type SearchResultProps = {
 const SearchResult = ({ scrud, drugs }: SearchResultProps) => {
   return (
     <tbody id="drug-search-result">
-      {scrud === "true" ? (
-        <tr>
-          <td colspan={5}>
-            <button
-              class="btn btn-primary w-100"
-              type="button"
-              data-dismiss="modal"
-              data-toggle="modal"
-              data-target="#addDrugModal"
-            >
-              <i class="bi bi-plus"></i> Drug
-            </button>
-          </td>
-        </tr>
-      ) : (
-        ""
-      )}
       {drugs.length === 0 ? (
         <tr class="text-center">
           <td colspan={5}>No drug found</td>

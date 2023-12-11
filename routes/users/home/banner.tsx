@@ -11,7 +11,7 @@ const Banner = () => {
           />
         </div>
         <div class="col">
-          <h1 class="display-5 fw-bold lh-1 mb-3">Welcome to DMS</h1>
+          <h1 class="display-5 lh-1 mb-3">Welcome to DMS</h1>
           <p class="lead">
             Our mission is to provide our patients with the highest quality
             dental care in a comfortable and welcoming environment.

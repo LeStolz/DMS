@@ -16,7 +16,7 @@ const Services = ({ services }: { services: Service[] }) => {
   ];
 
   services.forEach((service, idx) => {
-    service.url = urls[idx];
+    service.url = urls[idx % 9];
   });
 
   return (

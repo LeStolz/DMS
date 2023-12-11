@@ -8,6 +8,7 @@ import Login from "./login";
 import Warning from "../../components/warning";
 import Topbar from "../../components/topbar";
 import { User } from "../../types";
+import { formatError } from "../../utils";
 
 const cookieOptions = {
   secure: true,
@@ -170,8 +171,7 @@ authRouter.post("/signup", async (req, res) => {
       .json({ ...user, password: undefined });
   } catch (error: any) {
     if (error instanceof Error) {
-      console.error(error.message);
-      return res.status(400).send(error.message.split("'.")[0].split("'")[1]);
+      return res.status(400).send(formatError(error.message));
     }
 
     return res.status(500).send("Signup failed. Please try again later.");
@@ -192,10 +192,6 @@ authRouter.post("/login", async (req, res) => {
       ).recordset?.[0],
       role,
     };
-
-    if (user.isLocked) {
-      return res.status(401).send("This account has been locked.");
-    }
 
     if (
       phone == null ||
@@ -221,8 +217,7 @@ authRouter.post("/login", async (req, res) => {
       .json({ ...user, password: undefined });
   } catch (error: any) {
     if (error instanceof Error) {
-      console.error(error.message);
-      return res.status(400).send(error.message.split("'.")[0].split("'")[1]);
+      return res.status(400).send(formatError(error.message));
     }
 
     return res.status(500).send("Login failed. Please try again later.");

@@ -213,14 +213,14 @@ textarea:read-only {
   border: var(--bs-border-width) solid transparent;
 }
 
+#status {
+  opacity: 1;
+  transition: opacity 200ms ease-in;
+}
+
 .htmx-request #status {
-  display: none;
+  opacity: 0;
 }
-
-#status + .htmx-indicator {
-  display: none;
-}
-
-.htmx-request #status + .htmx-indicator {
-  display: inline-block;
+.htmx-request#status {
+  opacity: 0;
 }

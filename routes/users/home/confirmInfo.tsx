@@ -178,14 +178,14 @@ const ConfirmInfo = () => {
                   data-toggle="modal"
                   data-dismiss="modal"
                   data-target="#contactInfoModal"
-                  class="btn btn-danger text-white flex-grow-1 fw-bold fs-5 py-2 rounded-md"
+                  class="btn btn-danger text-white flex-grow-1 fs-5 py-2 rounded-md"
                 >
                   Back
                 </button>
                 <button
                   hx-post="/users/makeAppointment"
                   hx-target="#confirmInfoModalBody"
-                  class="btn btn-primary text-white flex-grow-1 fw-bold fs-5 py-2 rounded-md"
+                  class="btn btn-primary text-white flex-grow-1 fs-5 py-2 rounded-md"
                 >
                   Book Now!
                 </button>

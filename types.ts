@@ -1,7 +1,7 @@
 import { DbName } from "./dbs";
 
 export type User = {
-  id: number;
+  id: string;
   name: string;
   password: string;
   phone: string;

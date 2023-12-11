@@ -10,7 +10,7 @@ const Nav = () => {
           </div>
           <div>
             <a
-              class="btn btn-danger text-white fw-bold fs-5 py-2 px-5 rounded-md"
+              class="btn btn-danger text-white fs-5 py-2 px-5 rounded-md"
               href="#services"
             >
               See more
@@ -25,7 +25,7 @@ const Nav = () => {
           </div>
           <div>
             <a
-              class="btn btn-danger text-white fw-bold fs-5 py-2 px-5 rounded-md"
+              class="btn btn-danger text-white fs-5 py-2 px-5 rounded-md"
               href="#dentists"
             >
               See more

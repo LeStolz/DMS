@@ -1,4 +1,5 @@
 import * as elements from "typed-html";
+import { validateForm } from "../../utils";
 
 const AddUser = () => {
   return (
@@ -28,54 +29,85 @@ const AddUser = () => {
             </div>
           </div>
           <div class="modal-body">
-            <div class="row p-2">
-              <div class="w-100 row p-0 m-0 mb-3">
-                <div class="col-6">
-                  <label for="phone" class="form-label">
-                    Phone
-                  </label>
-                  <input
-                    type="phone"
-                    class="form-control"
-                    name="phone"
-                    id="phone"
-                    placeholder="0901234567"
-                  />
-                </div>
-                <div class="col-6">
-                  <label for="password" class="form-label">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    class="form-control"
-                    name="password"
-                    id="password"
-                    placeholder="********"
-                  />
+            <form
+              hx-post="/admins/addUser"
+              hx-target="#user-search-result"
+              hx-swap="afterbegin"
+              hx-target-error="#error"
+              class="needs-validation"
+              novalidate
+              hx-on={validateForm(true)}
+            >
+              <div class="mb-3">
+                <div class="row">
+                  <div class="col-6">
+                    <label for="phone" class="form-label">
+                      Phone
+                    </label>
+                    <input
+                      type="phone"
+                      pattern="[0-9]{10}"
+                      class="form-control"
+                      name="phone"
+                      id="phone"
+                      placeholder="0901234567"
+                      required=""
+                    />
+                    <div class="invalid-feedback">
+                      Phone must contain only digits and have a length of 10.
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <label for="password" class="form-label">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      min="8"
+                      pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$"
+                      class="form-control"
+                      name="password"
+                      id="password"
+                      placeholder="********"
+                      required=""
+                    />
+                    <div class="invalid-feedback">
+                      Password must contain lowercases, uppercases and digits
+                      and must be at least 8 long.
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="w-100 row p-0 m-0 mb-3">
-                <div class="col-6">
-                  <label for="name" class="form-label">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="name"
-                    id="name"
-                    placeholder="Nguyen Van A"
-                  />
-                </div>
-                <div class="col-6">
-                  <label for="role" class="form-label">
-                    Role
-                  </label>
-                  <select name="role" class="form-select">
-                    <option value="staff">Staff</option>
-                    <option value="dentist">Dentist</option>
-                  </select>
+              <div class="mb-3">
+                <div class="row">
+                  <div class="col-6">
+                    <label for="name" class="form-label">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="name"
+                      id="name"
+                      placeholder="Nguyen Van A"
+                      required=""
+                    />
+                    <div class="invalid-feedback">Name must not be empty.</div>
+                  </div>
+                  <div class="col-6">
+                    <label for="role" class="form-label">
+                      As
+                    </label>
+                    <select
+                      name="role"
+                      id="role"
+                      required=""
+                      class="form-select"
+                    >
+                      <option value="dentist">Dentist</option>
+                      <option value="staff">Staff</option>
+                    </select>
+                  </div>
                 </div>
               </div>
               <div>
@@ -90,6 +122,8 @@ const AddUser = () => {
                         type="radio"
                         name="gender"
                         id="female"
+                        required=""
+                        value="female"
                       />
                       <label class="form-check-label" for="female">
                         Female
@@ -102,6 +136,8 @@ const AddUser = () => {
                         name="gender"
                         id="male"
                         checked
+                        required=""
+                        value="male"
                       />
                       <label class="form-check-label" for="male">
                         Male
@@ -110,16 +146,28 @@ const AddUser = () => {
                   </div>
                 </div>
               </div>
-
               <div class="d-grid gap-2">
                 <button
-                  data-dismiss="modal"
-                  class="close btn btn-danger text-white fw-bold fs-5 py-2 px-5 rounded-md"
+                  type="submit"
+                  class="close btn btn-danger text-white fs-5 py-2 px-5 rounded-md d-flex justify-content-center align-items-end"
                 >
-                  <i class="bi bi-plus"></i> User
+                  Add User
+                  <div class="position-relative">
+                    <span
+                      class="htmx-indicator spinner-border spinner-border-sm position-absolute"
+                      style="left: 0.4rem; bottom: 0.4rem"
+                      role="status"
+                    />
+                    <span
+                      id="status"
+                      class="position-absolute"
+                      role="status"
+                    ></span>
+                  </div>
                 </button>
+                <div id="error" class="invalid-feedback d-block"></div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>

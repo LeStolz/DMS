@@ -1,3 +1,11 @@
+export function formatError(string: string) {
+  if (string.includes("'.") && string.includes("'")) {
+    return string.split("'.")[0].split("'")[1];
+  }
+
+  return string;
+}
+
 export function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -41,4 +49,26 @@ export async function parseSqlJson(sqlJson: { [key: string]: string }) {
       }
     )
   )[0];
+}
+
+export function validateForm(removeError: boolean = false) {
+  return `
+    htmx:before-request:
+      if (!this.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      this.classList.add('was-validated');
+      ${removeError && `document.querySelector('#error').innerHTML = '';`}
+
+    htmx:after-request:
+      if (400 <= event.detail.xhr.status) {
+        document.querySelector('#error').style.color = '';
+      }
+      else {
+        document.querySelector('#error').innerHTML = '';
+      }
+
+      setTimeout(() => document.querySelector('#status').innerHTML = '', 2000)
+  `;
 }

@@ -1,5 +1,6 @@
 import * as elements from "typed-html";
 import { User } from "../types";
+import { validateForm } from "../utils";
 
 type ProfileSettingsProps = {
   update?: boolean;
@@ -21,14 +22,7 @@ const ProfileSettings = ({ update = true, user }: ProfileSettingsProps) => {
         hx-target="#status"
         class="needs-validation"
         novalidate
-        hx-on="
-          htmx:before-request:
-            if (!this.checkValidity()) {
-              event.preventDefault();
-              event.stopPropagation();
-            }
-            this.classList.add('was-validated');
-          "
+        hx-on={validateForm()}
       >
         <div class="mb-3">
           <div class="row">
@@ -160,13 +154,24 @@ const ProfileSettings = ({ update = true, user }: ProfileSettingsProps) => {
         </div>
         {update === true ? (
           <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-danger text-white">
+            <button
+              type="submit"
+              class="btn btn-danger text-white d-flex justify-content-center align-items-end"
+            >
               Update
-              <span id="status" role="status"></span>
-              <span
-                class="htmx-indicator spinner-border spinner-border-sm"
-                role="status"
-              />
+              <div class="position-relative">
+                <span
+                  class="htmx-indicator spinner-border spinner-border-sm position-absolute"
+                  style="left: 0.3rem; bottom: 0.3rem"
+                  role="status"
+                />
+                <span
+                  id="status"
+                  class="position-absolute"
+                  style="left: 0.3rem; bottom: 0"
+                  role="status"
+                ></span>
+              </div>
             </button>
             <div id="error" class="invalid-feedback d-block"></div>
           </div>

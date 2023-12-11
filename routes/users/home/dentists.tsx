@@ -11,7 +11,7 @@ const Dentists = ({ dentists }: { dentists: Dentist[] }) => {
   ];
 
   dentists.forEach((dentist, idx) => {
-    dentist.url = urls[idx];
+    dentist.url = urls[idx % 4];
   });
 
   return (

@@ -26,6 +26,19 @@ const Drugs = ({ scrud = false }: { scrud?: boolean }) => {
         </div>
         <input name="scrud" type="hidden" value={scrud ? "true" : "false"} />
       </form>
+      {scrud === true ? (
+        <button
+          class="btn btn-primary w-100 mb-1"
+          type="button"
+          data-dismiss="modal"
+          data-toggle="modal"
+          data-target="#addDrugModal"
+        >
+          <i class="bi bi-plus"></i> Drug
+        </button>
+      ) : (
+        ""
+      )}
       <table class="table">
         <thead>
           <tr>

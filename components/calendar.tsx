@@ -107,14 +107,14 @@ const Calendar = () => {
       <div class="p-4 bg-white w-100 border-top border-secondary d-flex justify-content-around">
         <button
           type="reset"
-          class="btn btn-danger text-white fw-bold fs-5 py-2 px-5 rounded-md"
+          class="btn btn-danger text-white fs-5 py-2 px-5 rounded-md"
         >
           Clear Selection
         </button>
 
         <button
           type="button"
-          class="btn btn-primary fw-bold fs-5 py-2 px-5 rounded-md"
+          class="btn btn-primary fs-5 py-2 px-5 rounded-md"
           data-toggle="modal"
           data-target="#contactInfoModal"
         >
