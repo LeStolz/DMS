@@ -77,7 +77,7 @@ const TabContents = ({
   treatment: Treatment;
 }) => {
   return (
-    <div class="tab-content table-responsive" id="pills-tabContent">
+    <div class="tab-content table-responsive w-100" id="pills-tabContent">
       <div
         class="tab-pane fade show active"
         id={`pills-general-${id}`}
@@ -139,7 +139,7 @@ const TabContents = ({
         aria-labelledby={`pills-services-tab-${id}`}
         tabindex="0"
       >
-        <table class="table">
+        <table class="table w-100">
           <thead>
             <tr>
               <th class="pt-0" scope="col">
@@ -175,7 +175,7 @@ const TabContents = ({
         aria-labelledby={`pills-prescription-tab-${id}`}
         tabindex="0"
       >
-        <table class="table">
+        <table class="table w-100">
           <thead>
             <tr>
               <th class="pt-0" scope="col">

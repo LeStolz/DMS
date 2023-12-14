@@ -1,6 +1,7 @@
 import * as elements from "typed-html";
 import { Drug } from "../../types";
-import { capitalize, formatPrice, formatShortDate } from "../../utils";
+import { capitalize, formatShortDate, validateForm } from "../../utils";
+import DrugBatches from "./drugBatches";
 
 type DetailsProps = {
   scrud: string;
@@ -11,68 +12,147 @@ const Details = ({ scrud, drug }: DetailsProps) => {
   const readonly = scrud === "false" ? { readonly: "" } : {};
 
   return (
-    <div class="row p-2">
-      <div class="mb-3">
-        <label for="name" class="form-label">
-          Name
-        </label>
+    <div>
+      <form
+        hx-put="/drugs/updateDrug"
+        hx-target="#status"
+        hx-target-error="#error"
+        class="needs-validation"
+        novalidate
+        hx-on={validateForm(true)}
+      >
         <input
-          type="text"
-          class="form-control"
-          name="name"
-          id="name"
-          {...readonly}
-          value={drug.name}
+          hx-swap-oob="true"
+          id="drugId"
+          type="hidden"
+          name="drugId"
+          value={drug.id}
         />
-      </div>
-      <div class="w-100 row p-0 m-0 mb-3">
-        <div class="col-6">
-          <label for="price" class="form-label">
-            Price
-          </label>
-          <input
-            type="text"
-            class="form-control"
-            name="price"
-            id="price"
-            {...readonly}
-            value={formatPrice(drug.price!)}
-          />
+        <input type="hidden" name="id" value={drug.id} />
+        <div class="row p-2">
+          <div class="mb-3">
+            <label for="name" class="form-label">
+              Name
+            </label>
+            <input
+              type="text"
+              class="form-control"
+              name="name"
+              id="name"
+              placeholder="Amoxicillin"
+              required=""
+              {...readonly}
+              value={drug.name}
+            />
+            <div class="invalid-feedback">Name must not be empty.</div>
+          </div>
+          <div class="w-100 row p-0 m-0 mb-3">
+            <div class="col-6">
+              <label for="price" class="form-label">
+                Price
+              </label>
+              <div class="input-group">
+                <input
+                  type="number"
+                  min="1000"
+                  step="1000"
+                  class="form-control"
+                  name="price"
+                  id="price"
+                  placeholder="30000"
+                  required=""
+                  {...readonly}
+                  value={drug.price?.toString()}
+                />
+                <span class="input-group-text rounded-end">đ</span>
+                <div class="invalid-feedback">
+                  Price must be multiples of 1000.
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <label for="unit" class="form-label">
+                Unit
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                name="unit"
+                id="unit"
+                placeholder="Tablets"
+                required=""
+                {...readonly}
+                value={capitalize(drug.unit!)}
+              />
+              <div class="invalid-feedback">Unit must not be empty.</div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="directive" class="form-label">
+              Directive
+            </label>
+            {scrud === "true" ? (
+              <textarea
+                class="form-control"
+                name="directive"
+                id="directive"
+                rows="3"
+                placeholder="Use for... Do not use for..."
+                required=""
+              >
+                {drug.directive}
+              </textarea>
+            ) : (
+              <p class="fw-bold my-2">{drug.directive}</p>
+            )}
+          </div>
+          {scrud === "true" ? (
+            <div class="d-grid gap-2">
+              <button
+                type="submit"
+                class="close btn btn-danger text-white rounded-md d-flex justify-content-center align-items-end"
+              >
+                Update Drug Info
+                <div class="position-relative">
+                  <span
+                    class="htmx-indicator spinner-border spinner-border-sm position-absolute"
+                    style="left: 0.3rem; bottom: 0.3rem"
+                    role="status"
+                  />
+                  <span
+                    id="status"
+                    class="position-absolute"
+                    style="left: 0.3rem; bottom: 0"
+                    role="status"
+                  ></span>
+                </div>
+              </button>
+              <div id="error" class="invalid-feedback d-block"></div>
+            </div>
+          ) : (
+            ""
+          )}
         </div>
-        <div class="col-6">
-          <label for="unit" class="form-label">
-            Unit
-          </label>
-          <input
-            type="text"
-            class="form-control"
-            name="unit"
-            id="unit"
-            {...readonly}
-            value={capitalize(drug.unit!)}
-          />
-        </div>
-      </div>
-      <div class="mb-3">
-        <label for="directive" class="form-label">
-          Directive
-        </label>
-        {scrud === "true" ? (
-          <textarea
-            class="form-control"
-            name="directive"
-            id="directive"
-            rows="3"
-          >
-            {drug.directive}
-          </textarea>
-        ) : (
-          <p class="fw-bold my-2">{drug.directive}</p>
-        )}
-      </div>
-      <div class="mb-3">
+      </form>
+      <div class="p-2">
         <label class="form-label">Drug Batches</label>
-        <table class="table align-middle w-auto">
+        {scrud === "true" ? (
+          <button
+            class="btn btn-primary w-100"
+            type="button"
+            data-dismiss="modal"
+            data-toggle="modal"
+            data-target="#drugBatchInfoModal"
+            onclick={`
+              document.querySelector('#drugBatchInfoModal [name="drugName"]').value = "${drug.name}"
+            `}
+          >
+            <i class="bi bi-plus"></i> Drug Batch
+          </button>
+        ) : (
+          ""
+        )}
+        <table class="table align-middle w-100">
           <thead>
             <tr>
               <th scope="col">Stock</th>
@@ -80,60 +160,14 @@ const Details = ({ scrud, drug }: DetailsProps) => {
               {scrud === "true" ? <th scope="col">Action</th> : ""}
             </tr>
           </thead>
-          <tbody>
-            {drug.drugBatches == null ? (
-              <tr>
-                <td colspan={5}>No drug batch found</td>
-              </tr>
-            ) : (
-              drug.drugBatches.map((drugBatch: Drug["drugBatches"][0]) => (
-                <tr>
-                  <td>{drugBatch.stock}</td>
-                  <td>{formatShortDate(drugBatch.expirationDate)}</td>
-                  {scrud === "true" ? (
-                    <td>
-                      <button class="btn btn-danger text-white">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </td>
-                  ) : (
-                    ""
-                  )}
-                </tr>
-              ))
-            )}
-            {scrud === "true" ? (
-              <tr>
-                <td colspan={5}>
-                  <button
-                    class="btn btn-primary w-100"
-                    type="button"
-                    data-dismiss="modal"
-                    data-toggle="modal"
-                    data-target="#drugBatchInfoModal"
-                  >
-                    <i class="bi bi-plus"></i> Drug Batch
-                  </button>
-                </td>
-              </tr>
-            ) : (
-              ""
-            )}
-          </tbody>
+          <DrugBatches
+            drugBatches={drug.drugBatches}
+            drugId={drug.id}
+            drugName={drug.name}
+            scrud={scrud}
+          />
         </table>
       </div>
-      {scrud === "true" ? (
-        <div class="d-grid gap-2">
-          <button
-            data-dismiss="modal"
-            class="close btn btn-danger text-white fs-5 py-2 px-5 rounded-md"
-          >
-            Update Drug
-          </button>
-        </div>
-      ) : (
-        ""
-      )}
     </div>
   );
 };

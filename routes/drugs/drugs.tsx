@@ -2,6 +2,7 @@ import * as elements from "typed-html";
 import DrugInfoModal from "./drugInfoModal";
 import DrugBatchInfo from "./drugBatchInfo";
 import AddDrug from "./addDrug";
+import RemoveDrugBatch from "./removeDrugBatch";
 
 const Drugs = ({ scrud = false }: { scrud?: boolean }) => {
   return (
@@ -51,6 +52,7 @@ const Drugs = ({ scrud = false }: { scrud?: boolean }) => {
       </table>
       <DrugInfoModal />
       <DrugBatchInfo />
+      <RemoveDrugBatch />
       <AddDrug />
     </div>
   );

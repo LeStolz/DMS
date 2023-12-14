@@ -39,6 +39,7 @@ export type Drug = {
   drugBatches: {
     stock: number;
     expirationDate: Date;
+    isRemoved?: boolean;
   }[];
 };
 
@@ -49,6 +50,7 @@ export type DrugBatch = {
   quantity: number;
   dosage: string;
   expirationDate: Date;
+  stock?: number;
 };
 
 export type Treatment = {

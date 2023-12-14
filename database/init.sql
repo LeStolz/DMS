@@ -212,6 +212,7 @@ begin tran
 
 		create table treatment(
 			id uniqueidentifier default(newid()) primary key,
+			saved bit not null default(0),
 
 			dentistId uniqueidentifier not null foreign key references dentist(id),
 			shift nvarchar(16) not null check(shift in ('morning', 'afternoon', 'evening')),
@@ -709,6 +710,21 @@ commit tran
 
 go
 
+create or alter proc saveTreatment as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		print 'Do something'
+	end try
+	begin catch
+		throw
+	end catch
+commit tran
+
+go
+
 create or alter proc addServiceToTreatment as
 begin tran
 	set xact_abort on
@@ -811,6 +827,7 @@ begin tran
 		grant exec on dbo.createTreatment to dentists
 		grant exec on dbo.addServiceToTreatment to dentists
 		grant exec on dbo.addDrugToTreatment to dentists
+		grant exec on dbo.saveTreatment to dentists
 
 		grant exec on dbo.createGuestPatient to staffs
 		grant exec on dbo.getPatientByPhone to staffs
@@ -904,9 +921,9 @@ begin tran
 		select @patientBId = id from patient where phone = '0211260210'
 
 		insert into appointment(dentistId, patientId, shift, date, status) values
-			(@dentistAId, @patientAId, 'afternoon', '2023-12-04', 'confirmed'),
-			(@dentistAId, @patientBId, 'afternoon', '2023-12-11', 'pending'),
-			(@dentistBId, @patientAId, 'morning', '2023-12-14', 'pending')
+			(@dentistAId, @patientAId, 'afternoon', '2023-12-24', 'confirmed'),
+			(@dentistAId, @patientBId, 'afternoon', '2023-12-21', 'pending'),
+			(@dentistBId, @patientAId, 'morning', '2023-12-24', 'pending')
 
 		insert into service(name, price, description) values
 			('Dental bracing', 40000000, 'Bracing is a method of using specialized appliances that are fixed or removable on teeth to help move and align teeth to the correct positions. Thus giving customers even, beautiful teeth, ensuring proper chewing and biting function.'),
@@ -941,8 +958,8 @@ begin tran
 		select @medoralId = id from drug where name = 'Medoral'
 
 		insert into drugBatch(drugId, expirationDate, import, stock) values
-			(@amoxicillinId, '2023-12-12', 10, 10),
-			(@medoralId, '2023-12-10', 5, 5)
+			(@amoxicillinId, '2023-12-22', 10, 10),
+			(@medoralId, '2023-12-20', 5, 5)
 
 		insert into prescription default values
 
@@ -954,7 +971,7 @@ begin tran
 			prescriptionId, symptoms, notes, toothTreated, outcome, treatmentCharge
 		) values
 			(
-				@dentistAId, 'afternoon', '2023-12-04',
+				@dentistAId, 'afternoon', '2023-12-24',
 				@prescriptionId, 'None', 'None', 'Wisdom tooth', 'Success', 100000
 			)
 
@@ -970,11 +987,11 @@ begin tran
 		where id = @treatmentId
 
 		insert into prescribedDrug(prescriptionId, drugId, expirationDate, dosage, quantity) values
-			(@prescriptionId,@amoxicillinId, '2023-12-12', '1 pill after breakfast', 3)
+			(@prescriptionId,@amoxicillinId, '2023-12-22', '1 pill after breakfast', 3)
 
 		update drugBatch
 		set stock -= 3
-		where drugId = @amoxicillinId and expirationDate = '2023-12-12'
+		where drugId = @amoxicillinId and expirationDate = '2023-12-22'
 
 		update prescription
 		set total += 3 * (select price from drug where id = @amoxicillinId)

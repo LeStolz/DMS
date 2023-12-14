@@ -1,4 +1,10 @@
 export function formatError(string: string) {
+  console.error(string);
+
+  if (string.includes("REFERENCE constraint")) {
+    return "This item is currently in use.";
+  }
+
   if (string.includes("'.") && string.includes("'")) {
     return string.split("'.")[0].split("'")[1];
   }
@@ -51,7 +57,10 @@ export async function parseSqlJson(sqlJson: { [key: string]: string }) {
   )[0];
 }
 
-export function validateForm(removeError: boolean = false) {
+export function validateForm(
+  removeError: boolean = false,
+  error: string = "error"
+) {
   return `
     htmx:before-request:
       if (!this.checkValidity()) {
@@ -59,14 +68,14 @@ export function validateForm(removeError: boolean = false) {
         event.stopPropagation();
       }
       this.classList.add('was-validated');
-      ${removeError && `document.querySelector('#error').innerHTML = '';`}
+      ${removeError && `document.querySelector('#${error}').innerHTML = '';`}
 
     htmx:after-request:
       if (400 <= event.detail.xhr.status) {
-        document.querySelector('#error').style.color = '';
+        document.querySelector('#${error}').style.color = '';
       }
       else {
-        document.querySelector('#error').innerHTML = '';
+        document.querySelector('#${error}').innerHTML = '';
       }
 
       setTimeout(() => document.querySelector('#status').innerHTML = '', 2000)

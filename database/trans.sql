@@ -977,7 +977,7 @@ begin tran
 			throw 51000, 'Treatment id is required.', 1
 		end
 
-		if not exists(select * from treatment where id = @treatmentId)
+		if not exists(select * from treatment where id = @treatmentId and saved = 1)
 		begin;
 			throw 51000, 'Treatment does not exist.', 1
 		end
@@ -1187,6 +1187,23 @@ begin tran
 		select pd.*, d.name from prescribedDrug pd
 		join drug d on d.id = pd.drugId
 		where prescriptionId = @presId
+	end try
+	begin catch
+		throw
+	end catch
+commit tran
+
+go
+
+create or alter proc saveTreatment(@id uniqueidentifier) as
+begin tran
+	set xact_abort on
+	set nocount on
+
+	begin try
+		update treatment
+		set saved = 1
+		where id = @id
 	end try
 	begin catch
 		throw
