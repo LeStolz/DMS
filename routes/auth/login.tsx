@@ -84,7 +84,7 @@ const Login = () => {
                   </select>
                 </div>
                 <div class="d-grid gap-2">
-                  <button type="submit" class="btn btn-danger text-white">
+                  <button type="submit" class="btn btn-primary text-white">
                     Login
                     <div
                       class="htmx-indicator spinner-border spinner-border-sm"

@@ -156,7 +156,7 @@ const ProfileSettings = ({ update = true, user }: ProfileSettingsProps) => {
           <div class="d-grid gap-2">
             <button
               type="submit"
-              class="btn btn-danger text-white d-flex justify-content-center align-items-end"
+              class="btn btn-primary text-white d-flex justify-content-center align-items-end"
             >
               Update
               <div class="position-relative">

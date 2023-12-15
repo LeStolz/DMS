@@ -1,3 +1,11 @@
+export function formatPlural(number: number, singular: string, plural: string) {
+  if (number === 1) {
+    return singular;
+  }
+
+  return plural;
+}
+
 export function formatError(string: string) {
   console.error(string);
 

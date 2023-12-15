@@ -51,9 +51,11 @@ export type DrugBatch = {
   dosage: string;
   expirationDate: Date;
   stock?: number;
+  unit?: string;
 };
 
 export type Treatment = {
+  id: string;
   shift: string;
   date: Date;
   toothTreated: string;

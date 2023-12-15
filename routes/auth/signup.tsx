@@ -175,7 +175,7 @@ const Signup = () => {
                   <div class="invalid-feedback">Address must not be empty.</div>
                 </div>
                 <div class="d-grid gap-2">
-                  <button type="submit" class="btn btn-danger text-white">
+                  <button type="submit" class="btn btn-primary text-white">
                     Sign up
                     <div
                       class="htmx-indicator spinner-border spinner-border-sm"

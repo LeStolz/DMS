@@ -78,7 +78,7 @@ const DrugBatchInfo = () => {
                 <div class="d-flex gap-3">
                   <button
                     type="submit"
-                    class="flex-grow-1 close btn btn-danger text-white fs-5 py-2 px-5 rounded-md d-flex justify-content-center align-items-end"
+                    class="flex-grow-1 close btn btn-primary text-white fs-5 py-2 px-5 rounded-md d-flex justify-content-center align-items-end"
                     style="flex-basis: 0"
                   >
                     Add Drug Batch

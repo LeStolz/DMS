@@ -72,7 +72,7 @@ begin tran
 			throw 51000, 'No patient found.', 1
 		end
 
-		select name, phone, gender, dob, address from patient
+		select id, name, phone, gender, dob, address from patient
 		where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
 	end try
 	begin catch
@@ -579,7 +579,7 @@ begin tran
 			p.gender as [patient.gender],
 			p.address as [patient.address],
 			(
-		 		select t.shift, t.date, t.toothTreated, t.notes, t.treatmentCharge,
+		 		select t.id, t.shift, t.date, t.toothTreated, t.notes, t.treatmentCharge,
 				(
 					select d.name, d.phone, d.gender from dentist d
 					where t.dentistId = d.id
@@ -602,6 +602,7 @@ begin tran
 				join appointment a on
 					a.patientId = p.id and t.dentistId = a.dentistId and
 					t.shift = a.shift and t.date = a.date
+				where t.saved = 1
 				for json path, include_null_values
 			) as [treatments]
 		from patient p

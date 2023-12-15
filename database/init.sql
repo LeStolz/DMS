@@ -275,7 +275,7 @@ commit tran
 
 go
 
-create or alter proc getPatientByPhone as
+create or alter proc getPatientsByPhone as
 begin tran
 	set xact_abort on
 	set nocount on
@@ -816,7 +816,7 @@ begin tran
 		grant exec on dbo.getServiceDetails to patients
 		grant exec on dbo.getUserByCred to patients
 
-		grant exec on dbo.getPatientByPhone to dentists
+		grant exec on dbo.getPatientsByPhone to dentists
 		grant exec on dbo.getPatientDetails to dentists
 		grant exec on dbo.updatePatient to dentists
 		grant exec on dbo.getDentistDetails to dentists
@@ -830,7 +830,7 @@ begin tran
 		grant exec on dbo.saveTreatment to dentists
 
 		grant exec on dbo.createGuestPatient to staffs
-		grant exec on dbo.getPatientByPhone to staffs
+		grant exec on dbo.getPatientsByPhone to staffs
 		grant exec on dbo.getPatientDetails to staffs
 		grant exec on dbo.getServices to staffs
 		grant exec on dbo.getServiceDetails to staffs
@@ -968,11 +968,11 @@ begin tran
 
 		insert into treatment(
 			dentistId, shift, date,
-			prescriptionId, symptoms, notes, toothTreated, outcome, treatmentCharge
+			prescriptionId, symptoms, notes, toothTreated, outcome, treatmentCharge, saved
 		) values
 			(
 				@dentistAId, 'afternoon', '2023-12-24',
-				@prescriptionId, 'None', 'None', 'Wisdom tooth', 'Success', 100000
+				@prescriptionId, 'None', 'None', 'Wisdom tooth', 'Success', 100000, 1
 			)
 
 		declare @treatmentId uniqueidentifier

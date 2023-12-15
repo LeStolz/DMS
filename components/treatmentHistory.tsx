@@ -1,6 +1,6 @@
 import * as elements from "typed-html";
-import { Treatment } from "../../types";
-import { capitalize, formatShortDate } from "../../utils";
+import { Treatment } from "../types";
+import { capitalize, formatShortDate } from "../utils";
 
 const Tabs = ({ id }: { id: number }) => {
   return (

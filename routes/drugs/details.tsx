@@ -110,7 +110,7 @@ const Details = ({ scrud, drug }: DetailsProps) => {
             <div class="d-grid gap-2">
               <button
                 type="submit"
-                class="close btn btn-danger text-white rounded-md d-flex justify-content-center align-items-end"
+                class="close btn btn-primary text-white rounded-md d-flex justify-content-center align-items-end"
               >
                 Update Drug Info
                 <div class="position-relative">

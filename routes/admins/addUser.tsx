@@ -149,7 +149,7 @@ const AddUser = () => {
               <div class="d-grid gap-2">
                 <button
                   type="submit"
-                  class="close btn btn-danger text-white fs-5 py-2 px-5 rounded-md d-flex justify-content-center align-items-end"
+                  class="close btn btn-primary text-white fs-5 py-2 px-5 rounded-md d-flex justify-content-center align-items-end"
                 >
                   Add User
                   <div class="position-relative">

@@ -5,7 +5,7 @@ import Success from "../../components/success";
 import { patient } from "../auth/router";
 import Topbar from "../../components/topbar";
 import ProfileSettings from "../../components/profileSettings";
-import TreatmentHistory from "./treatmentHistory";
+import TreatmentHistory from "../../components/treatmentHistory";
 import Warning from "../../components/warning";
 import { formatError, parseSqlJson } from "../../utils";
 import { Dentist, Service, Treatment, User } from "../../types";
