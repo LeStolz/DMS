@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as elements from "typed-html";
 import Home from "./home/home";
 import Success from "../../components/success";
-import { patient } from "../auth/router";
+import { dentist, patient } from "../auth/router";
 import Topbar from "../../components/topbar";
 import ProfileSettings from "../../components/profileSettings";
 import TreatmentHistory from "../../components/treatmentHistory";

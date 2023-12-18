@@ -1,7 +1,13 @@
 import * as elements from "typed-html";
-import ProfileSettings from "../../components/profileSettings";
 import DrugInfo from "./drugInfo";
-import DrugInfoModal from "../drugs/drugInfoModal";
+import { Drug, Service, Treatment, User } from "../../types";
+import {
+  capitalize,
+  formatPlural,
+  formatPrice,
+  formatShortDate,
+  validateForm,
+} from "../../utils";
 
 const Tabs = ({ id }: { id: number }) => {
   return (
@@ -68,25 +74,45 @@ const Tabs = ({ id }: { id: number }) => {
       </li>
       <li class="nav-item" role="presentation">
         <button
-          class="btn btn-danger text-white w-100"
-          type="button"
-          hx-post="/dentists/addTreatment"
-          hx-target="#addTreatment"
+          class="btn btn-danger text-white w-100 d-flex justify-content-center align-items-end"
+          type="submit"
           role="tab"
+          id="save"
         >
           Save
+          <div class="position-relative">
+            <span
+              class="htmx-indicator spinner-border spinner-border-sm position-absolute"
+              style="left: 0.3rem; bottom: 0.3rem"
+              role="status"
+            />
+            <span
+              id="status"
+              class="position-absolute"
+              style="left: 0.3rem; bottom: 0"
+              role="status"
+            ></span>
+          </div>
         </button>
+        <div id="add-treatment-error" class="invalid-feedback d-block"></div>
       </li>
     </ul>
   );
 };
 
-const TabContents = ({ id }: { id: number }) => {
+const TabContents = ({
+  id,
+  dentist,
+  services,
+  drugs,
+}: {
+  id: number;
+  dentist: User;
+  services: Service[];
+  drugs: Drug[];
+}) => {
   return (
-    <div
-      class="tab-content table-responsive w-100 vh-100 max-h-xl"
-      id="pills-tabContent"
-    >
+    <div class="tab-content w-100 vh-100 max-h-xl" id="pills-tabContent">
       <div
         class="ms-2 tab-pane fade show active"
         id={`pills-general-${id}`}
@@ -95,33 +121,88 @@ const TabContents = ({ id }: { id: number }) => {
         tabindex="0"
       >
         <div class="mb-3">
-          <label for="date" class="form-label">
+          <label for="shift" class="form-label">
             <strong class="text-secondary">
               <i class="bi bi-calendar"></i> Time:{" "}
             </strong>
           </label>
-          <input type="date" class="form-control" name="date" id="date" />
+          <div class="row">
+            <div class="col-6">
+              <select name="shift" id="shift" required="" class="form-select">
+                <option value="morning">Morning</option>
+                <option value="afternoon">Afternoon</option>
+                <option value="evening">Evening</option>
+              </select>
+              <div class="invalid-feedback">Shift is required.</div>
+            </div>
+            <div class="col-6">
+              <input
+                type="date"
+                class="form-control"
+                name="date"
+                id="date"
+                required=""
+                value={new Date().toISOString().split("T")[0]}
+              />
+              <div id="appointment-error" class="invalid-feedback">
+                Date is required.
+              </div>
+            </div>
+          </div>
         </div>
         <div class="mb-3">
-          <label for="tooth" class="form-label">
+          <label for="toothTreated" class="form-label">
             <strong class="text-secondary">
               <i class="bi bi-bandaid"></i> Tooth treated:{" "}
             </strong>
           </label>
-          <input type="input" class="form-control" name="tooth" id="tooth" />
+          <input
+            type="text"
+            class="form-control"
+            name="toothTreated"
+            id="toothTreated"
+            required=""
+          />
+          <div class="invalid-feedback">Tooth treated is required.</div>
         </div>
         <div class="mb-3">
-          <label for="note" class="form-label">
+          <label for="notes" class="form-label">
             <strong class="text-secondary">
               <i class="bi bi-journal"></i> Note:{" "}
             </strong>
           </label>
           <textarea
+            required=""
             class="form-control"
-            name="note"
-            id="note"
+            name="notes"
+            id="notes"
             rows="3"
-          ></textarea>
+          ></textarea>{" "}
+          <input type="hidden" name="symptoms" value="" />
+          <input type="hidden" name="outcome" value="" />
+          <div class="invalid-feedback">Note is required.</div>
+        </div>
+        <div class="mb-3">
+          <label for="treatmentCharge" class="form-label">
+            <strong class="text-secondary">
+              <i class="bi bi-cash-coin"></i> Treatment Charge:{" "}
+            </strong>
+          </label>
+          <div class="input-group">
+            <input
+              type="number"
+              min="1000"
+              step="1000"
+              class="form-control"
+              name="treatmentCharge"
+              id="treatmentCharge"
+              required=""
+            />
+            <span class="input-group-text rounded-end">đ</span>
+            <div class="invalid-feedback">
+              Treatment charge must be multiples of 1000.
+            </div>
+          </div>
         </div>
       </div>
       <div
@@ -135,19 +216,20 @@ const TabContents = ({ id }: { id: number }) => {
           <strong class="text-secondary">
             <i class="bi bi-person"></i> Name:{" "}
           </strong>
-          <span>Ths. BS. Hoàng Công Đương</span>
+          <span>Dr. {dentist.name}</span>
+          <input type="hidden" name="dentistId" value={dentist.id} />
         </div>
         <div class="mb-3">
           <strong class="text-secondary">
             <i class="bi bi-telephone"></i> Phone:{" "}
           </strong>
-          <span>0905842490</span>
+          <span>{dentist.phone}</span>
         </div>
         <div class="mb-3">
           <strong class="text-secondary">
             <i class="bi bi-gender-ambiguous"></i> Gender:{" "}
           </strong>
-          <span>Male</span>
+          <span>{capitalize(dentist.gender!)}</span>
         </div>
       </div>
       <div
@@ -157,65 +239,40 @@ const TabContents = ({ id }: { id: number }) => {
         aria-labelledby={`pills-services-tab-${id}`}
         tabindex="0"
       >
-        <table class="table w-auto align-middle">
-          <thead>
-            <tr>
-              <th class="pt-0" scope="col">
-                Service
-              </th>
-              <th class="pt-0" scope="col">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {["Wisdom Teeth Removal", "Dental Crowning"].map((service) => (
-              <tr>
-                <td>
-                  <a class="link-primary" href="/users#services">
-                    {service}
-                  </a>
-                </td>
-                <td>
-                  <button class="btn btn-danger text-white">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            ))}
-            <tr>
-              <td colspan={2}>
-                <div class="dropdown">
-                  <button
-                    class="btn btn-primary dropdown-toggle text-white w-100"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i class="bi bi-plus"></i> Service{" "}
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        Wisdom Teeth Removal
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        Dental Crowning
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        Something else here
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {services.map((service, idx) => (
+          <div>
+            <input
+              type="checkbox"
+              class="service-checkbox btn-check"
+              autocomplete="off"
+              name="serviceId"
+              value={service.id}
+              id={`service-${service.id}`}
+              required=""
+              onchange="
+                let requiredCheckboxes = $('.service-checkbox');
+
+                if(requiredCheckboxes.is(':checked')) {
+                  requiredCheckboxes.removeAttr('required');
+                } else {
+                  requiredCheckboxes.attr('required', 'required');
+                }
+              "
+            />
+            <label
+              class="btn mb-3 border"
+              style="border-color: transparent !important"
+              for={`service-${service.id}`}
+            >
+              {service.name}
+            </label>
+            {idx === services.length - 1 ? (
+              <span class="invalid-feedback">Service is required.</span>
+            ) : (
+              ""
+            )}
+          </div>
+        ))}
       </div>
       <div
         class="ms-2 tab-pane fade"
@@ -224,90 +281,74 @@ const TabContents = ({ id }: { id: number }) => {
         aria-labelledby={`pills-prescription-tab-${id}`}
         tabindex="0"
       >
-        <table class="table align-middle w-auto">
-          <thead>
-            <tr>
-              <th class="pt-0" scope="col">
-                Drug
-              </th>
-              <th class="pt-0" scope="col">
-                Quantity
-              </th>
-              <th class="pt-0" scope="col">
-                Dosage
-              </th>
-              <th class="pt-0" scope="col">
-                Exp. Date
-              </th>
-              <th class="pt-0" scope="col">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {["Amoxicillin", "Aspirin"].map((drug) => (
+        <div class="table-responsive">
+          <table class="table align-middle w-100">
+            <thead>
               <tr>
-                <td>
-                  <p class="d-flex align-items-center m-0">
-                    <a
-                      role="button"
-                      data-toggle="modal"
-                      data-target="#drugInfoModalModal"
-                      class="link-primary"
-                    >
-                      {drug}
-                    </a>
-                  </p>
-                </td>
-                <td>
-                  <p class="d-flex align-items-center m-0">2 tablets</p>
-                </td>
-                <td>
-                  <p class="d-flex align-items-center m-0">
-                    2 pills/morning. 2 pills/afternoon.
-                  </p>
-                </td>
-                <td>
-                  <p class="d-flex align-items-center m-0">30/12/2023</p>
-                </td>
-                <td>
-                  <button class="btn btn-danger text-white">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </td>
+                <th class="pt-0" scope="col">
+                  Drug
+                </th>
+                <th class="pt-0" scope="col">
+                  Quantity
+                </th>
+                <th class="pt-0" scope="col">
+                  Dosage
+                </th>
+                <th class="pt-0" scope="col">
+                  Exp. Date
+                </th>
+                <th class="pt-0" scope="col">
+                  Action
+                </th>
               </tr>
-            ))}
-            <tr>
-              <td colspan={5}>
-                <button
-                  class="btn btn-primary w-100"
-                  type="button"
-                  data-toggle="modal"
-                  data-target="#drugInfoModal"
-                >
-                  <i class="bi bi-plus"></i> Drug
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <DrugInfo />
-        <DrugInfoModal />
+            </thead>
+            <tbody id="addDrug"></tbody>
+          </table>
+        </div>
+        <button
+          class="btn btn-primary w-100"
+          type="button"
+          data-toggle="modal"
+          data-target="#drugInfoModal"
+        >
+          <i class="bi bi-plus"></i> Drug
+        </button>
+        <div id="drug-error" class="invalid-feedback d-block"></div>
       </div>
     </div>
   );
 };
 
-const AddTreatment = () => {
+const AddTreatment = ({
+  dentist,
+  services,
+  drugs,
+}: {
+  dentist: User;
+  services: Service[];
+  drugs: Drug[];
+}) => {
   return (
     <div id="addTreatment">
-      <ProfileSettings update={false} />
-      <div class="mx-5 max-w-xxl pb-5">
-        <h1>Treatment</h1>
-        <div class="d-flex align-items-start">
-          <Tabs id={1} />
-          <TabContents id={1} />
-        </div>
+      <div class="m-5 max-w-xxl">
+        <h1>New Treatment</h1>
+        <form
+          class="needs-validation d-flex align-items-start"
+          hx-post="/dentists/addTreatment"
+          hx-target="#addTreatment"
+          hx-target-error="#add-treatment-error"
+          novalidate
+          hx-on={validateForm(false, "add-treatment-error")}
+        >
+          <Tabs id={-1} />
+          <TabContents
+            id={-1}
+            dentist={dentist}
+            services={services}
+            drugs={drugs}
+          />
+        </form>
+        <DrugInfo drugs={drugs} />
       </div>
     </div>
   );

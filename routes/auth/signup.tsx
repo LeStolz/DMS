@@ -48,7 +48,7 @@ const Signup = () => {
                         required=""
                       />
                       <div class="invalid-feedback">
-                        First name must not be empty.
+                        First name is required.
                       </div>
                     </div>
                     <div class="col-6">
@@ -63,9 +63,7 @@ const Signup = () => {
                         placeholder="Nguyen Van"
                         required=""
                       />
-                      <div class="invalid-feedback">
-                        Last name must not be empty.
-                      </div>
+                      <div class="invalid-feedback">Last name is required.</div>
                     </div>
                   </div>
                 </div>
@@ -172,7 +170,7 @@ const Signup = () => {
                     id="address"
                     rows="3"
                   ></textarea>
-                  <div class="invalid-feedback">Address must not be empty.</div>
+                  <div class="invalid-feedback">Address is required.</div>
                 </div>
                 <div class="d-grid gap-2">
                   <button type="submit" class="btn btn-primary text-white">

@@ -5,9 +5,14 @@ import { validateForm } from "../utils";
 type ProfileSettingsProps = {
   update?: boolean;
   user?: User;
+  isDentist?: boolean;
 };
 
-const ProfileSettings = ({ update = true, user }: ProfileSettingsProps) => {
+const ProfileSettings = ({
+  update = true,
+  user,
+  isDentist = false,
+}: ProfileSettingsProps) => {
   const firstName = user?.name.split(" ").at(-1);
   const lastName = user?.name.split(" ").slice(0, -1).join(" ");
 
@@ -17,7 +22,11 @@ const ProfileSettings = ({ update = true, user }: ProfileSettingsProps) => {
         <h1>Profile</h1>
       </div>
       <form
-        hx-put="/users/updatePatient"
+        hx-put={
+          isDentist
+            ? `/dentists/updatePatient/${user?.id}`
+            : "/users/updatePatient"
+        }
         hx-target-error="#error"
         hx-target="#status"
         class="needs-validation"
@@ -39,7 +48,7 @@ const ProfileSettings = ({ update = true, user }: ProfileSettingsProps) => {
                 value={firstName}
                 required=""
               />
-              <div class="invalid-feedback">First name must not be empty.</div>
+              <div class="invalid-feedback">First name is required.</div>
             </div>
             <div class="col-6">
               <label for="lastName" class="form-label">
@@ -54,7 +63,7 @@ const ProfileSettings = ({ update = true, user }: ProfileSettingsProps) => {
                 value={lastName}
                 required=""
               />
-              <div class="invalid-feedback">Last name must not be empty.</div>
+              <div class="invalid-feedback">Last name is required.</div>
             </div>
           </div>
         </div>
@@ -150,7 +159,7 @@ const ProfileSettings = ({ update = true, user }: ProfileSettingsProps) => {
           >
             {user?.address}
           </textarea>
-          <div class="invalid-feedback">Address must not be empty.</div>
+          <div class="invalid-feedback">Address is required.</div>
         </div>
         {update === true ? (
           <div class="d-grid gap-2">

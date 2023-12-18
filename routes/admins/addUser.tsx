@@ -92,7 +92,7 @@ const AddUser = () => {
                       placeholder="Nguyen Van A"
                       required=""
                     />
-                    <div class="invalid-feedback">Name must not be empty.</div>
+                    <div class="invalid-feedback">Name is required.</div>
                   </div>
                   <div class="col-6">
                     <label for="role" class="form-label">

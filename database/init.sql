@@ -17,7 +17,7 @@ begin tran
 			password nvarchar(64) not null,
 			phone nchar(10) not null,
 
-			constraint [Admin name must not be empty.]
+			constraint [Admin name is required.]
 				check(len(name) > 0),
 			constraint [Admin phone must contain only digits and have a length of 10.]
 				check(isnumeric(phone) = 1 and len(phone) = 10),
@@ -35,7 +35,7 @@ begin tran
 			gender nvarchar(8) ,
 			isLocked bit not null default(0),
 
-			constraint [Staff name must not be empty.]
+			constraint [Staff name is required.]
 				check(len(name) > 0),
 			constraint [Staff phone must contain only digits and have a length of 10.]
 				check(isnumeric(phone) = 1 and len(phone) = 10),
@@ -57,7 +57,7 @@ begin tran
 			dob date not null,
 			address nvarchar(128) not null,
 
-			constraint [Patient name must not be empty.]
+			constraint [Patient name is required.]
 				check(len(name) > 0),
 			constraint [Patient phone must contain only digits and have a length of 10.]
 				check(isnumeric(phone) = 1 and len(phone) = 10),
@@ -65,7 +65,7 @@ begin tran
 				check(gender is null or gender in ('male', 'female')),
 			constraint [Patient DOB must be before today.]
 				check(dob < getdate()),
-			constraint [Patient address must not be empty.]
+			constraint [Patient address is required.]
 				check(len(address) > 0),
 			constraint [A patient with this phone number already exists.]
 				unique(phone),
@@ -84,7 +84,7 @@ begin tran
 			gender nvarchar(8),
 			isLocked bit not null default(0),
 
-			constraint [Dentist name must not be empty.]
+			constraint [Dentist name is required.]
 				check(len(name) > 0),
 			constraint [Dentist phone must contain only digits and have a length of 10.]
 				check(isnumeric(phone) = 1 and len(phone) = 10),
@@ -134,7 +134,7 @@ begin tran
 			description nvarchar(1024) not null,
 			price int not null,
 
-			constraint [Service name must not be empty.]
+			constraint [Service name is required.]
 				check(len(name) > 0),
 			constraint [A service with this name already exists.]
 				unique(name),
@@ -149,13 +149,13 @@ begin tran
 			price int not null,
 			unit nvarchar(64) not null,
 
-			constraint [Drug name must not be empty.]
+			constraint [Drug name is required.]
 				check(len(name) > 0),
 			constraint [A drug with this name already exists.]
 				unique(name),
 			constraint [Drug price must be positive.]
 				check(price > 0),
-			constraint [Drug unit must not be empty.]
+			constraint [Drug unit is required.]
 				check(len(unit) > 0)
 		)
 
@@ -184,7 +184,7 @@ begin tran
 
 			constraint [This prescription already contains the prescribed drug from this batch.]
 				primary key(prescriptionId, drugId, expirationDate),
-			constraint [Prescribed drug dosage must not be empty.]
+			constraint [Prescribed drug dosage is required.]
 				check(len(dosage) > 0),
 			constraint [Prescribed drug quantity must be positive.]
 				check(quantity > 0)

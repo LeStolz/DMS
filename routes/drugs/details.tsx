@@ -44,7 +44,7 @@ const Details = ({ scrud, drug }: DetailsProps) => {
               {...readonly}
               value={drug.name}
             />
-            <div class="invalid-feedback">Name must not be empty.</div>
+            <div class="invalid-feedback">Name is required.</div>
           </div>
           <div class="w-100 row p-0 m-0 mb-3">
             <div class="col-6">
@@ -84,7 +84,7 @@ const Details = ({ scrud, drug }: DetailsProps) => {
                 {...readonly}
                 value={capitalize(drug.unit!)}
               />
-              <div class="invalid-feedback">Unit must not be empty.</div>
+              <div class="invalid-feedback">Unit is required.</div>
             </div>
           </div>
           <div class="mb-3">

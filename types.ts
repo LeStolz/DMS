@@ -30,6 +30,13 @@ export type Dentist = {
   url?: string;
 };
 
+export type Appointment = {
+  dentistId: string;
+  patientId: string;
+  shift: "morning" | "afternoon" | "evening";
+  date: Date;
+};
+
 export type Drug = {
   id: string;
   name: string;
