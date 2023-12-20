@@ -676,7 +676,7 @@ begin tran
 
 		if exists(
 			select * from appointment where
-				dentistId = @id and datepart(dw, date) = @date and shift = @shift
+				dentistId = @id and date >= getdate() and datepart(dw, date) = @date and shift = @shift
 		)
 		begin;
 			throw 51000, 'This schedule cannot be deleted as it is currently in use by at least one appointment.', 1

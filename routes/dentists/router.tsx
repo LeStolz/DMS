@@ -6,7 +6,14 @@ import Topbar from "../../components/topbar";
 import Success from "../../components/success";
 import { dentist } from "../auth/router";
 import Users from "./patients/users";
-import { Appointment, Drug, Service, Treatment, User } from "../../types";
+import {
+  Appointment,
+  Drug,
+  Schedule as ScheduleType,
+  Service,
+  Treatment,
+  User,
+} from "../../types";
 import SearchResult from "./patients/searchResult";
 import { formatError, parseSqlJson } from "../../utils";
 import Warning from "../../components/warning";
@@ -269,16 +276,67 @@ dentistsRouter.post("/addTreatment", dentist, async (req, res) => {
   }
 });
 
-dentistsRouter.get("/schedule", dentist, async (req, res) => {
-  // Use req.user.id to call getDentistSchedules
-  // Use req.user.id to call getDentistAppointments
-  // Use req.user.id to call addDentistSchedule
-  // Use req.user.id to call removeDentistSchedule
+dentistsRouter.get("/schedule/:date", dentist, async (req, res) => {
+  let schedules: ScheduleType[] = [];
+  let appointments: Appointment[] = [];
+
+  const date = req.params.date;
+
+  try {
+    schedules = (
+      await (await req.db())
+        .input("id", req.user?.id)
+        .execute("getDentistSchedules")
+    ).recordset;
+  } catch {}
+
+  try {
+    appointments = (
+      await (await req.db())
+        .input("id", req.user?.id)
+        .execute("getDentistAppointments")
+    ).recordset;
+  } catch {}
+
   return res.send(
     <Topbar user={req.user}>
-      <Schedule />
+      <Schedule
+        date={date === "def" ? undefined : new Date(date)}
+        schedules={schedules}
+        appointments={appointments}
+      />
     </Topbar>
   );
+});
+
+dentistsRouter.post("/alterSchedule", dentist, async (req, res) => {
+  if (req.body.disabled !== "false") {
+    return res.send();
+  }
+
+  try {
+    if (req.body.date == null) {
+      await (await req.db())
+        .input("id", req.user?.id)
+        .input("date", req.body.day)
+        .input("shift", req.body.shift)
+        .execute("addDentistSchedule");
+    } else {
+      await (await req.db())
+        .input("id", req.user?.id)
+        .input("date", req.body.day)
+        .input("shift", req.body.shift)
+        .execute("removeDentistSchedule");
+    }
+  } catch (error: any) {
+    if (error instanceof Error) {
+      return res.status(400).send(formatError(error.message));
+    }
+
+    return res.status(500).send("Update failed. Please try again later.");
+  }
+
+  return res.send();
 });
 
 export default dentistsRouter;

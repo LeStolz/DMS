@@ -37,6 +37,12 @@ export type Appointment = {
   date: Date;
 };
 
+export type Schedule = {
+  dentistId: string;
+  shift: "morning" | "afternoon" | "evening";
+  date: number;
+};
+
 export type Drug = {
   id: string;
   name: string;

@@ -8,7 +8,7 @@ const Topbar = ({ children, user }: elements.Children & { user?: User }) => {
     patient: [],
     dentist: [
       ["Patients", "/dentists/patients"],
-      ["Schedule", "/dentists/schedule"],
+      ["Schedule", "/dentists/schedule/def"],
       ["Drugs", "/drugs/drugs"],
     ],
     staff: [

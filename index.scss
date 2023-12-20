@@ -1,6 +1,7 @@
 $primary: #3896b0;
 $secondary: #084f65;
 $danger: tomato;
+$dark-danger: lighten(tomato, 7.5%);
 $min-contrast-ratio: 3;
 
 @import "./node_modules/bootstrap/scss/bootstrap.scss";
@@ -162,13 +163,25 @@ img {
 
 .btn-check:disabled + .btn.btn-dentist {
   color: $white !important;
-  background-color: $danger !important;
+  background-color: $primary !important;
 }
 
 .btn-check:checked + .btn,
 .btn-check + .btn:hover {
   color: $white !important;
   background-color: $primary !important;
+}
+
+.btn-check:checked + .btn-danger,
+.btn-check + .btn-danger {
+  color: $white !important;
+  background-color: $danger !important;
+}
+
+.btn-check + .btn-danger:hover {
+  color: $white !important;
+  background-color: $dark-danger !important;
+  border-color: $dark-danger !important;
 }
 
 .scroll-link {

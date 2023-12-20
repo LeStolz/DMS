@@ -8,7 +8,15 @@ import ProfileSettings from "../../components/profileSettings";
 import TreatmentHistory from "../../components/treatmentHistory";
 import Warning from "../../components/warning";
 import { formatError, parseSqlJson } from "../../utils";
-import { Dentist, Service, Treatment, User } from "../../types";
+import {
+  Appointment,
+  Dentist,
+  Schedule,
+  Service,
+  Treatment,
+  User,
+} from "../../types";
+import Calendar from "../../components/calendar";
 
 const usersRouter = Router();
 
@@ -117,6 +125,21 @@ usersRouter.put("/updatePatient", patient, async (req, res) => {
 
     return res.status(500).send("Update failed. Please try again later.");
   }
+});
+
+usersRouter.get("/schedule/:date", patient, async (req, res) => {
+  let schedules: Schedule[] = [];
+  let appointments: Appointment[] = [];
+
+  const date = req.params.date;
+
+  return res.send(
+    <Calendar
+      date={date === "def" ? undefined : new Date(date)}
+      schedules={schedules}
+      appointments={appointments}
+    />
+  );
 });
 
 export default usersRouter;
