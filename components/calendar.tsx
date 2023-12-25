@@ -1,15 +1,19 @@
 import * as elements from "typed-html";
-import { Appointment, Schedule } from "../types";
+import { Appointment, Dentist, Schedule } from "../types";
 import { capitalize, formatDate } from "../utils";
 
 type ScheduleProps = {
   date?: Date;
+  dentist?: string;
   schedules?: Schedule[];
   appointments?: Appointment[];
+  dentists?: Dentist[];
 };
 
 const Calendar = ({
   date,
+  dentist = "",
+  dentists = [],
   schedules = [],
   appointments = [],
 }: ScheduleProps) => {
@@ -67,16 +71,20 @@ const Calendar = ({
             <div class="text-center">
               <p class={`lead mb-3`}>Please pick a Dentist</p>
             </div>
+
             <div class="d-flex justify-content-center align-items-center m-3">
               <select
                 name="dentist"
                 id="dentistSelect"
                 class="form-select form-select-lg"
+                hx-get="/users/getDentistSchedules"
+                hx-target="#calendar"
+                hx-vals={`{"listDentist": ${JSON.stringify(dentists)}}`}
+                hx-trigger="change"
               >
-                <option value="0">Any</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
+                {dentists.map((item) => (
+                  <option value={item.id}>{item.name}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -92,6 +100,12 @@ const Calendar = ({
                 hx-get={`/users/schedule/${
                   prevDate.toISOString().split("T")[0]
                 }`}
+                hx-vals={`{
+                  "listDentist": ${JSON.stringify(dentists)},
+                  "appointments" : ${JSON.stringify(appointments)},
+                  "schedules" : ${JSON.stringify(schedules)},
+                  "dentist" : ${JSON.stringify(dentist)}
+                 }`}
                 hx-target="#calendar"
                 class="btn btn-dark icon-h-sm icon-w-sm rounded-circle"
               >
@@ -106,6 +120,12 @@ const Calendar = ({
                 hx-get={`/users/schedule/${
                   nextDate.toISOString().split("T")[0]
                 }`}
+                hx-vals={`{
+                  "listDentist": ${JSON.stringify(dentists)},
+                  "appointments" : ${JSON.stringify(appointments)},
+                  "schedules" : ${JSON.stringify(schedules)},
+                  "dentist" : ${JSON.stringify(dentist)}
+                 }`}
                 hx-target="#calendar"
                 class="btn btn-dark icon-h-sm icon-w-sm rounded-circle"
               >
@@ -133,71 +153,30 @@ const Calendar = ({
                 </div>
                 {shifts.map((shift) => (
                   <div id={`form-${shift}-${weekdayIdx}`} class="row mb-1">
-                    <input type="hidden" name="shift" value={shift} />
-                    <input
-                      type="hidden"
-                      name="day"
-                      value={(weekdayIdx + 1).toString()}
-                    />
-                    <input
-                      type="hidden"
-                      name="disabled"
-                      value={
-                        appointments.find((appointment) => {
-                          if (
-                            appointment.date.getTime() ===
-                              weekday.date?.getTime() &&
-                            appointment.shift === shift
-                          ) {
-                            return false;
-                          }
-
-                          if (
-                            appointment.date.getDay() === weekdayIdx &&
-                            appointment.shift === shift &&
-                            appointment.date.getTime() >= new Date().getTime()
-                          ) {
-                            return true;
-                          }
-
-                          return false;
-                        }) != null || weekday.date == null
-                          ? "true"
-                          : "false"
-                      }
-                    />
                     <input
                       type="radio"
                       class="btn-check"
                       name="date"
+                      data-date={`${date?.getFullYear()}-${
+                        (date?.getMonth() as number) + 1
+                      }-${weekday.date ? weekday.date.getDate() : ""}
+                      `}
                       id={`${shift}-${weekday.day}`}
                       disabled={
-                        appointments.find((appointment) => {
-                          if (
-                            appointment.date.getTime() ===
-                              weekday.date?.getTime() &&
-                            appointment.shift === shift
-                          ) {
-                            return false;
-                          }
-
-                          if (
-                            appointment.date.getDay() === weekdayIdx &&
-                            appointment.shift === shift &&
-                            appointment.date.getTime() >= new Date().getTime()
-                          ) {
-                            return true;
-                          }
-
-                          return false;
-                        }) != null || weekday.date == null
-                      }
-                      checked={
                         schedules.find(
                           (schedule) =>
                             schedule.date === weekdayIdx + 1 &&
                             schedule.shift === shift
-                        ) != null && weekday.date != null
+                        )
+                          ? appointments.find(
+                              (appointment) =>
+                                appointment.date.getDate() ===
+                                  weekday?.date?.getDate() &&
+                                appointment.shift === shift
+                            )
+                            ? true
+                            : false
+                          : true
                       }
                     />
                     <label
@@ -236,6 +215,13 @@ const Calendar = ({
               class="btn btn-primary fs-5 py-2 px-5 rounded-md"
               data-toggle="modal"
               data-target="#contactInfoModal"
+              hx-get="/users/bookAppointments"
+              hx-vars={`{
+                "shift": document.querySelector("input[type=radio].btn-check:checked").id,
+                "date" : document.querySelector("input[type=radio].btn-check:checked").getAttribute('data-date'),
+                "dentist" : ${JSON.stringify(dentist)}
+              }`}
+              hx-target="#contactInfoModal .modal-body"
             >
               Book Now!
             </button>

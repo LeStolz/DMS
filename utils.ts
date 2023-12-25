@@ -24,6 +24,21 @@ export function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+export function splitFullName(string: string) {
+  const regex = /(.+?)\s(.+)/;
+
+  const match = string.match(regex);
+
+  if (match) {
+    const lastName = match[1];
+    const firstName = match[2];
+
+    return { lastName, firstName };
+  } else {
+    return { lastName: "", firstName: "" };
+  }
+}
+
 export function formatShortDate(date: Date) {
   return date.toLocaleDateString(undefined, {
     year: "numeric",
