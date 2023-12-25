@@ -32,6 +32,7 @@ const ConfirmInfo = () => {
                 class="close btn btn-light icon-h-sm icon-w-sm border-0 rounded-circle"
                 data-dismiss="modal"
                 aria-label="Close"
+                onclick="window.location.reload()"
               >
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -48,7 +49,7 @@ const ConfirmInfo = () => {
                     type="phone"
                     class="form-control"
                     name="phone"
-                    id="phone"
+                    id="phone1"
                     value="0901234567"
                     readonly=""
                   />
@@ -62,7 +63,7 @@ const ConfirmInfo = () => {
                     type="date"
                     class="form-control"
                     name="dob"
-                    id="dob"
+                    id="dob1"
                   />
                 </div>
               </div>
@@ -81,7 +82,7 @@ const ConfirmInfo = () => {
                     type="text"
                     class="form-control"
                     name="name"
-                    id="first-name"
+                    id="first-name-1"
                     value="A"
                     readonly=""
                   />
@@ -94,7 +95,7 @@ const ConfirmInfo = () => {
                     type="text"
                     class="form-control"
                     name="name"
-                    id="last-name"
+                    id="last-name-1"
                     value="Nguyen Van"
                     readonly=""
                   />
@@ -109,7 +110,7 @@ const ConfirmInfo = () => {
                     <div class="form-check">
                       <input
                         readonly=""
-                        class="form-check-input"
+                        class="form-check-input-1"
                         type="radio"
                         name="gender"
                         id="female"
@@ -121,7 +122,7 @@ const ConfirmInfo = () => {
                     <div class="form-check">
                       <input
                         readonly=""
-                        class="form-check-input"
+                        class="form-check-input-1"
                         type="radio"
                         name="gender"
                         id="male"
@@ -142,7 +143,7 @@ const ConfirmInfo = () => {
                   readonly="readonly"
                   class="form-control"
                   name="address"
-                  id="address"
+                  id="address1"
                   rows="3"
                 ></textarea>
               </div>
@@ -156,9 +157,10 @@ const ConfirmInfo = () => {
                     type="text"
                     class="form-control"
                     name="name"
-                    id="dentist-name"
+                    id="dentist-name-1"
                     value="Nguyen Van B"
                   />
+                  <div class="id-dentist-1" id=""></div>
                 </div>
                 <div class="col-6">
                   <label for="doa" class="form-label">
@@ -169,8 +171,9 @@ const ConfirmInfo = () => {
                     type="date"
                     class="form-control"
                     name="doa"
-                    id="doa"
+                    id="doa1"
                   />
+                  <div class="shift1" id=""></div>
                 </div>
               </div>
               <div class="d-flex gap-3 not-printable">
@@ -185,6 +188,18 @@ const ConfirmInfo = () => {
                 <button
                   hx-post="/users/makeAppointment"
                   hx-target="#confirmInfoModalBody"
+                  hx-vars="{
+                    'dentistId' : document.querySelector('.id-dentist-1').id,
+                    'shift' : document.querySelector('.shift1').id,
+                    'date' : document.querySelector('#doa1').value,
+                    'userInfo' : {
+                      'phone' : htmx.find('#phone1').value,
+                      'dob' : htmx.find('#dob1').value,
+                      'name' : htmx.find('#last-name-1').value + ' ' + htmx.find('#first-name-1').value,
+                      'address' : htmx.find('#address1').value,
+                      'gender' : htmx.find('input[name=gender]:checked').id
+                    }
+                  }"
                   class="btn btn-primary text-white flex-grow-1 fs-5 py-2 rounded-md"
                 >
                   Book Now!

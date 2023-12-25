@@ -150,7 +150,7 @@ begin tran
 			values (@name, @phone, @gender, @dob, @address)
 		end
 
-		select name, phone, gender, dob, address from patient where phone = @phone
+		select id, name, phone, gender, dob, address from patient where phone = @phone
 	end try
 	begin catch
 		throw

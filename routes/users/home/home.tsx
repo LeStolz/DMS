@@ -29,7 +29,7 @@ const Home = ({ user, dentists, services }: HomeProps) => {
             <div class="text-center m-0 pt-4 bg-white">
               <h1 class={`m-0`}>Book Appointment</h1>
             </div>
-            <Calendar />
+            <Calendar dentists={dentists} />
           </div>
           <Dentists dentists={dentists} />
           <Services services={services} />
