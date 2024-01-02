@@ -9,6 +9,10 @@ export function formatPlural(number: number, singular: string, plural: string) {
 export function formatError(string: string) {
   console.error(string);
 
+  if (string.includes("deadlock")) {
+    return "Update failed, please try again.";
+  }
+
   if (string.includes("CHECK constraint")) {
     return string.split('".')[0].split('"')[1];
   }

@@ -260,495 +260,397 @@ go
 create or alter proc getUserByCred with execute as owner
 as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getPatientsByPhone as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc createPatient as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc createGuestPatient as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc createStaff as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc createDentist as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc lockUser as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc unlockUser as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getDentists as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getDentistDetails as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getDentistSchedules as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getDentistAppointments as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getUsers as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc bookAppointment as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getDentistsOnShift as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc updatePatient as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getPatientDetails as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc addDentistSchedule as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc removeDentistSchedule as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getDrugs as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getDrugDetails as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getServices as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc getServiceDetails as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc createDrug as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc updateDrug as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc deleteDrug as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc addDrugBatch as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc removeDrugBatch as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc createInvoice as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc createTreatment as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc saveTreatment as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc addServiceToTreatment as
 begin tran
-	set xact_abort on
-	set nocount on
-
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
 commit tran
 
 go
 
 create or alter proc addDrugToTreatment as
 begin tran
-	set xact_abort on
-	set nocount on
+commit tran
 
-	begin try
-		print 'Do something'
-	end try
-	begin catch
-		throw
-	end catch
+go
+
+create or alter proc getUserByCredFixed with execute as owner
+as
+begin tran
+commit tran
+
+go
+
+create or alter proc getPatientsByPhoneFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc createPatientFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc createGuestPatientFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc createStaffFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc createDentistFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc lockUserFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc unlockUserFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getDentistsFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getDentistDetailsFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getDentistSchedulesFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getDentistAppointmentsFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getUsersFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc bookAppointmentFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getDentistsOnShiftFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc updatePatientFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getPatientDetailsFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc addDentistScheduleFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc removeDentistScheduleFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getDrugsFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getDrugDetailsFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getServicesFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc getServiceDetailsFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc createDrugFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc updateDrugFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc deleteDrugFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc addDrugBatchFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc removeDrugBatchFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc createInvoiceFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc createTreatmentFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc saveTreatmentFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc addServiceToTreatmentFixed as
+begin tran
+commit tran
+
+go
+
+create or alter proc addDrugToTreatmentFixed as
+begin tran
 commit tran
 
 go
@@ -861,6 +763,77 @@ begin tran
 		grant exec on dbo.getDentistAppointments to dentists
 		grant exec on dbo.addDentistSchedule to dentists
 		grant exec on dbo.removeDentistSchedule to dentists
+
+
+		grant exec on dbo.getUserByCredFixed to guests
+		grant exec on dbo.createPatientFixed to guests
+		grant exec on dbo.createGuestPatientFixed to guests
+		grant exec on dbo.getDentistsFixed to guests
+		grant exec on dbo.getDentistSchedulesFixed to guests
+		grant exec on dbo.getDentistAppointmentsFixed to guests
+		grant exec on dbo.getDentistDetailsFixed to guests
+		grant exec on dbo.bookAppointmentFixed to guests
+		grant exec on dbo.getDentistsOnShiftFixed to guests
+		grant exec on dbo.getServicesFixed to guests
+		grant exec on dbo.getServiceDetailsFixed to guests
+
+		grant exec on dbo.getDentistsFixed to patients
+		grant exec on dbo.getDentistSchedulesFixed to patients
+		grant exec on dbo.getDentistAppointmentsFixed to patients
+		grant exec on dbo.getDentistDetailsFixed to patients
+		grant exec on dbo.bookAppointmentFixed to patients
+		grant exec on dbo.getDentistsOnShiftFixed to patients
+		grant exec on dbo.getServicesFixed to patients
+		grant exec on dbo.getServiceDetailsFixed to patients
+		grant exec on dbo.getUserByCredFixed to patients
+
+		grant exec on dbo.getPatientsByPhoneFixed to dentists
+		grant exec on dbo.getPatientDetailsFixed to dentists
+		grant exec on dbo.updatePatientFixed to dentists
+		grant exec on dbo.getDentistDetailsFixed to dentists
+		grant exec on dbo.getServicesFixed to dentists
+		grant exec on dbo.getServiceDetailsFixed to dentists
+		grant exec on dbo.getDrugsFixed to dentists
+		grant exec on dbo.getDrugDetailsFixed to dentists
+		grant exec on dbo.createTreatmentFixed to dentists
+		grant exec on dbo.addServiceToTreatmentFixed to dentists
+		grant exec on dbo.addDrugToTreatmentFixed to dentists
+		grant exec on dbo.saveTreatmentFixed to dentists
+
+		grant exec on dbo.createGuestPatientFixed to staffs
+		grant exec on dbo.getPatientsByPhoneFixed to staffs
+		grant exec on dbo.getPatientDetailsFixed to staffs
+		grant exec on dbo.getServicesFixed to staffs
+		grant exec on dbo.getServiceDetailsFixed to staffs
+		grant exec on dbo.getDentistsFixed to staffs
+		grant exec on dbo.getDentistSchedulesFixed to staffs
+		grant exec on dbo.getDentistAppointmentsFixed to staffs
+		grant exec on dbo.getDentistDetailsFixed to staffs
+		grant exec on dbo.bookAppointmentFixed to staffs
+		grant exec on dbo.getDentistsOnShiftFixed to staffs
+		grant exec on dbo.createInvoiceFixed to staffs
+		grant exec on dbo.getDrugsFixed to staffs
+		grant exec on dbo.getDrugDetailsFixed to staffs
+
+		grant exec on dbo.getDrugsFixed to admins
+		grant exec on dbo.getDrugDetailsFixed to admins
+		grant exec on dbo.createDrugFixed to admins
+		grant exec on dbo.updateDrugFixed to admins
+		grant exec on dbo.deleteDrugFixed to admins
+		grant exec on dbo.addDrugBatchFixed to admins
+		grant exec on dbo.removeDrugBatchFixed to admins
+		grant exec on dbo.createStaffFixed to admins
+		grant exec on dbo.createDentistFixed to admins
+		grant exec on dbo.getUsersFixed to admins
+		grant exec on dbo.lockUserFixed to admins
+		grant exec on dbo.unlockUserFixed to admins
+
+		grant exec on dbo.updatePatientFixed to patients
+		grant exec on dbo.getPatientDetailsFixed to patients
+		grant exec on dbo.getDentistSchedulesFixed to dentists
+		grant exec on dbo.getDentistAppointmentsFixed to dentists
+		grant exec on dbo.addDentistScheduleFixed to dentists
+		grant exec on dbo.removeDentistScheduleFixed to dentists
 	end try
 	begin catch
 		throw
