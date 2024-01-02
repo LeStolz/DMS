@@ -6,9 +6,9 @@ import Dentists from "./dentists";
 import Services from "./services";
 import Nav from "./nav";
 import Topbar from "../../../components/topbar";
-import ContactInfo from "./contactInfo";
-import ConfirmInfo from "./confirmInfo";
 import { Dentist, Service, User } from "../../../types";
+import ContactInfoModal from "./contactInfoModal";
+import ConfirmInfo from "./confirmInfo";
 
 type HomeProps = {
   user?: User;
@@ -21,6 +21,13 @@ const Home = ({ user, dentists, services }: HomeProps) => {
     <Topbar user={user}>
       <div>
         <div class="home not-printable">
+          <input
+            type="hidden"
+            hx-trigger="load"
+            hx-include="#dentistSelect"
+            hx-post={`/users/schedule/def`}
+            hx-target="#calendar"
+          ></input>
           <Banner />
           <About />
           <Nav />
@@ -29,13 +36,13 @@ const Home = ({ user, dentists, services }: HomeProps) => {
             <div class="text-center m-0 pt-4 bg-white">
               <h1 class={`m-0`}>Book Appointment</h1>
             </div>
-            <Calendar />
+            <Calendar user={user} dentists={dentists} />
           </div>
           <Dentists dentists={dentists} />
           <Services services={services} />
         </div>
-        <ContactInfo />
-        <ConfirmInfo />
+        <ContactInfoModal />
+        <ConfirmInfo user={user} />
       </div>
     </Topbar>
   );

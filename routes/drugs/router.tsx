@@ -21,7 +21,15 @@ drugsRouter.post("/search", patient, async (req, res) => {
   try {
     drugs = (await (await req.db()).input("name", name).execute("getDrugs"))
       .recordset;
-  } catch {}
+  } catch {
+    return res.send(
+      <tbody id="drug-search-result">
+        <tr class="text-center">
+          <td colspan={5}>No drug found</td>
+        </tr>
+      </tbody>
+    );
+  }
 
   return res.send(<SearchResult scrud={scrud} drugs={drugs} />);
 });
@@ -37,8 +45,12 @@ drugsRouter.post("/details", patient, async (req, res) => {
     );
 
     return res.send(<Details scrud={scrud} drug={drug} />);
-  } catch {
-    return res.send(<Warning>Drug does not exist</Warning>);
+  } catch (error: any) {
+    if (error.message.includes("Drug")) {
+      return res.send(<Warning>{error.message}</Warning>);
+    }
+
+    return res.status(500).send("Internal Server Error");
   }
 });
 
@@ -59,8 +71,6 @@ drugsRouter.get("/drugs-scrud", admin, async (req, res) => {
 });
 
 drugsRouter.post("/addDrug", admin, async (req, res) => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
   try {
     const { name, directive, price, unit } = req.body;
 
@@ -114,8 +124,6 @@ drugsRouter.post("/removeDrug", admin, async (req, res) => {
 });
 
 drugsRouter.put("/updateDrug", admin, async (req, res) => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
   try {
     const { id, name, directive, price, unit } = req.body;
 
@@ -140,8 +148,6 @@ drugsRouter.put("/updateDrug", admin, async (req, res) => {
 });
 
 drugsRouter.post("/addDrugBatch", admin, async (req, res) => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
   try {
     const { drugId, expirationDate, stock, drugName } = req.body;
 

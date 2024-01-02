@@ -132,11 +132,12 @@ begin tran
 			((select id from drug where name = 'Nystatin'), '2024-02-16', 10, 10)
 
 		alter table appointment add constraint [Appointment date must be after today.]
-			check(getdate() <= date)
+			check(cast(getdate() as date) <= date)
 
 		alter table appointment nocheck constraint [Appointment date must be after today.]
 
 		exec bookAppointment @dentist56, @patient20, 'afternoon', '2023-12-12'
+		exec bookAppointment @dentist56, @patient20, 'afternoon', '2023-12-13'
 		exec bookAppointment @dentist56, @patient84, 'afternoon', '2023-12-21'
 		exec bookAppointment @dentist56, @patient63, 'evening', '2023-12-24'
 		exec bookAppointment @dentist52, @patient21, 'evening', '2023-12-10'
@@ -159,10 +160,10 @@ begin tran
 
 		declare @amo uniqueidentifier, @med uniqueidentifier, @asp uniqueidentifier, @par uniqueidentifier
 
-		select @amo = id from drug where name = 'Amoxicillin'	
-		select @med = id from drug where name = 'Medoral'	
-		select @asp = id from drug where name = 'Aspirin'	
-		select @par = id from drug where name = 'Paracetamol'	
+		select @amo = id from drug where name = 'Amoxicillin'
+		select @med = id from drug where name = 'Medoral'
+		select @asp = id from drug where name = 'Aspirin'
+		select @par = id from drug where name = 'Paracetamol'
 
 		exec addDrugToTreatment @treat21, @amo, '2024-01-24', '1 pill/breakfast, 2 pill/diner', 3
 		exec addDrugToTreatment @treat24, @med, '2024-01-30', '1 spoon/breakfast, 2 spoon/diner', 2
@@ -170,13 +171,13 @@ begin tran
 		exec addDrugToTreatment @treat10, @amo, '2024-01-24', '2 pill/breakfast, 1 pill/diner', 2
 		exec addDrugToTreatment @treat10, @asp, '2024-01-31', '2 pill/breakfast, 2 pill/diner', 3
 		exec addDrugToTreatment @treat10, @par, '2024-01-13', '2 pill/breakfast, 2 pill/diner', 2
-		
+
 		declare @wtx uniqueidentifier, @db uniqueidentifier, @rct uniqueidentifier, @pt uniqueidentifier
-		
-		select @wtx = id from service where name = 'Wisdom tooth extraction'	
-		select @db = id from service where name = 'Dental bracing'	
-		select @rct = id from service where name = 'Root canal treatment'	
-		select @pt = id from service where name = 'Periodontitis treatment'	
+
+		select @wtx = id from service where name = 'Wisdom tooth extraction'
+		select @db = id from service where name = 'Dental bracing'
+		select @rct = id from service where name = 'Root canal treatment'
+		select @pt = id from service where name = 'Periodontitis treatment'
 
 		exec addServiceToTreatment @treat12, @wtx
 		exec addServiceToTreatment @treat21, @wtx
@@ -187,7 +188,7 @@ begin tran
 		exec addServiceToTreatment @treat10, @db
 		exec addServiceToTreatment @treat10, @rct
 		exec addServiceToTreatment @treat10, @pt
-		
+
 		exec saveTreatment @treat12
 		exec saveTreatment @treat21
 		exec saveTreatment @treat24

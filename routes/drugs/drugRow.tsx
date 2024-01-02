@@ -17,6 +17,7 @@ const DrugRow = ({ drug, scrud = "false", children }: DrugRowProps) => {
           role="button"
           data-toggle="modal"
           data-target="#drugInfoModalModal"
+          hx-indicator="#drugInfoModalIndicator"
           class="link-primary"
         >
           {drug.name}

@@ -1,17 +1,27 @@
 import * as elements from "typed-html";
-import { Appointment, Schedule } from "../types";
+import { Appointment, Dentist, Schedule, User } from "../types";
 import { capitalize, formatDate } from "../utils";
 
 type ScheduleProps = {
   date?: Date;
+  currentDate?: Date;
+  currentShift?: string;
+  currentDentistId?: string;
+  dentists: Dentist[];
   schedules?: Schedule[];
   appointments?: Appointment[];
+  user: User | undefined;
 };
 
 const Calendar = ({
   date,
+  currentDentistId,
+  currentDate,
+  currentShift,
+  dentists,
   schedules = [],
   appointments = [],
+  user,
 }: ScheduleProps) => {
   if (date == undefined) {
     date = new Date();
@@ -69,14 +79,23 @@ const Calendar = ({
             </div>
             <div class="d-flex justify-content-center align-items-center m-3">
               <select
-                name="dentist"
+                name="dentistId"
                 id="dentistSelect"
-                class="form-select form-select-lg"
+                class="form-select form-select-lg max-w-xs vw-100"
+                hx-include="#dentistSelect, #date-select, #shift-select"
+                hx-post={`/users/schedule/${date!.toISOString().split("T")[0]}`}
+                hx-target="#calendar"
               >
-                <option value="0">Any</option>
-                <option value="1">One</option>
-                <option value="2">Two</option>
-                <option value="3">Three</option>
+                <option value="any">Any</option>
+                {dentists.map((dentist) =>
+                  dentist.id === currentDentistId ? (
+                    <option selected="" value={dentist.id}>
+                      {dentist.name}
+                    </option>
+                  ) : (
+                    <option value={dentist.id}>{dentist.name}</option>
+                  )
+                )}
               </select>
             </div>
           </div>
@@ -89,7 +108,8 @@ const Calendar = ({
               <a
                 role="button"
                 type="button"
-                hx-get={`/users/schedule/${
+                hx-include="#dentistSelect"
+                hx-post={`/users/schedule/${
                   prevDate.toISOString().split("T")[0]
                 }`}
                 hx-target="#calendar"
@@ -103,7 +123,8 @@ const Calendar = ({
               <a
                 role="button"
                 type="button"
-                hx-get={`/users/schedule/${
+                hx-include="#dentistSelect"
+                hx-post={`/users/schedule/${
                   nextDate.toISOString().split("T")[0]
                 }`}
                 hx-target="#calendar"
@@ -114,7 +135,7 @@ const Calendar = ({
             </div>
           </div>
         </div>
-        <form>
+        <div>
           <div class="row gap-1 bg-white m-0 p-4 d-flex justify-content-center">
             <div class="d-none d-lg-block col-auto">
               <div class="row mb-1 datetime text-white">
@@ -141,6 +162,15 @@ const Calendar = ({
                     />
                     <input
                       type="hidden"
+                      name="date"
+                      value={
+                        weekday.date
+                          ? weekday.date.toISOString().split("T")[0]
+                          : ""
+                      }
+                    />
+                    <input
+                      type="hidden"
                       name="disabled"
                       value={
                         appointments.find((appointment) => {
@@ -149,19 +179,17 @@ const Calendar = ({
                               weekday.date?.getTime() &&
                             appointment.shift === shift
                           ) {
-                            return false;
-                          }
-
-                          if (
-                            appointment.date.getDay() === weekdayIdx &&
-                            appointment.shift === shift &&
-                            appointment.date.getTime() >= new Date().getTime()
-                          ) {
                             return true;
                           }
 
                           return false;
-                        }) != null || weekday.date == null
+                        }) != null ||
+                        weekday.date == null ||
+                        schedules.find(
+                          (schedule) =>
+                            schedule.date === weekdayIdx + 1 &&
+                            schedule.shift === shift
+                        ) == null
                           ? "true"
                           : "false"
                       }
@@ -178,31 +206,72 @@ const Calendar = ({
                               weekday.date?.getTime() &&
                             appointment.shift === shift
                           ) {
-                            return false;
-                          }
-
-                          if (
-                            appointment.date.getDay() === weekdayIdx &&
-                            appointment.shift === shift &&
-                            appointment.date.getTime() >= new Date().getTime()
-                          ) {
                             return true;
                           }
 
                           return false;
-                        }) != null || weekday.date == null
-                      }
-                      checked={
+                        }) != null ||
+                        weekday.date == null ||
                         schedules.find(
                           (schedule) =>
                             schedule.date === weekdayIdx + 1 &&
                             schedule.shift === shift
-                        ) != null && weekday.date != null
+                        ) == null
+                      }
+                      checked={
+                        (() => {
+                          if (
+                            shift === currentShift &&
+                            weekday.date?.getTime() === currentDate?.getTime()
+                          ) {
+                            if (
+                              appointments.find((appointment) => {
+                                if (
+                                  appointment.date.getTime() ===
+                                    weekday.date?.getTime() &&
+                                  appointment.shift === shift
+                                ) {
+                                  return true;
+                                }
+
+                                return false;
+                              }) != null ||
+                              weekday.date == null ||
+                              schedules.find(
+                                (schedule) =>
+                                  schedule.date === weekdayIdx + 1 &&
+                                  schedule.shift === shift
+                              ) == null
+                            ) {
+                              currentDate = undefined;
+                              currentShift = undefined;
+                              return false;
+                            }
+                            return true;
+                          }
+
+                          return false;
+                        })() == true
                       }
                     />
                     <label
                       class={`btn icon-w-lg icon-h-lg position-relative d-flex justify-content-center align-items-center`}
                       for={`${shift}-${weekday.day}`}
+                      hx-post={
+                        currentDentistId === "any" &&
+                        `/users/dentistsOnShift/${
+                          date!.toISOString().split("T")[0]
+                        }`
+                      }
+                      hx-include={`#form-${shift}-${weekdayIdx}, #dentistSelect`}
+                      hx-target="#dentistSelect"
+                      hx-swap="outerHTML"
+                      onclick={`
+                        $('#date-select').val('${
+                          weekday.date?.toISOString().split("T")[0]
+                        }');
+                        $('#shift-select').val('${shift}');
+                      `}
                     >
                       <span>
                         <i class="d-none d-lg-block bi bi-plus fs-2"></i>
@@ -222,25 +291,59 @@ const Calendar = ({
                 ))}
               </div>
             ))}
+            <input
+              type="hidden"
+              id="date-select"
+              name="currentDate"
+              value={
+                currentDate && !isNaN(currentDate.getTime())
+                  ? currentDate.toISOString().split("T")[0]
+                  : ""
+              }
+            />
+            <input
+              type="hidden"
+              id="shift-select"
+              name="currentShift"
+              value={currentShift ?? ""}
+            />
           </div>
           <div class="p-4 bg-white w-100 border-top border-secondary d-flex justify-content-around">
-            <button
-              type="reset"
-              class="btn btn-danger text-white fs-5 py-2 px-5 rounded-md"
-            >
-              Clear Selection
-            </button>
-
             <button
               type="button"
               class="btn btn-primary fs-5 py-2 px-5 rounded-md"
               data-toggle="modal"
-              data-target="#contactInfoModal"
+              data-target={
+                user && user.role !== "staff"
+                  ? "#confirmInfoModal"
+                  : "#contactInfoModal"
+              }
+              hx-include="#dentistSelect, #date-select, #shift-select"
+              hx-post="users/fillInfo"
+              hx-target="#contactInfoModal .modal-dialog"
+              hx-on={
+                user && user.role !== "staff"
+                  ? `htmx:after-request:
+                      if ($('#contactInfoModal #dentist-name').val())
+                        $('#confirmInfoModal #dentist-name').val($('#contactInfoModal #dentist-name').val());
+                      else
+                        $('#confirmInfoModal #dentist-name').val('Not picked yet');
+                      if ($('#contactInfoModal #doa').html())
+                        $('#confirmInfoModal #doa').html($('#contactInfoModal #doa').html());
+                      else
+                        $('#confirmInfoModal #doa').html('Not picked yet');
+
+                      $('#confirmInfoModal #date').val($('#contactInfoModal #date').val());
+                      $('#confirmInfoModal #shift').val($('#contactInfoModal #shift').val());
+                      $('#confirmInfoModal #dentist-id').val($('#contactInfoModal #dentist-id').val());
+                    `
+                  : ""
+              }
             >
               Book Now!
             </button>
           </div>
-        </form>
+        </div>
       </div>
       <span id="error" class="invalid-feedback d-block"></span>
     </div>

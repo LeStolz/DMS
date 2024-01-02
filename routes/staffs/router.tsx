@@ -29,7 +29,15 @@ staffsRouter.post("/search", staff, async (req, res) => {
     users = (
       await (await req.db()).input("phone", phone).execute("getPatientsByPhone")
     ).recordset;
-  } catch {}
+  } catch (error: any) {
+    return res.send(
+      <tbody id="user-search-result">
+        <tr class="text-center">
+          <td colspan={5}>No patient found</td>
+        </tr>
+      </tbody>
+    );
+  }
 
   return res.send(<SearchResult users={users} />);
 });

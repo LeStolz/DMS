@@ -760,19 +760,19 @@ begin tran
 
 	begin try
 		if not exists (select loginname from master.dbo.syslogins where name = 'guest')
-			create login guest with password = 'guest'
+			create login guest with password = 'Gst!Password123'
 
 		if not exists (select loginname from master.dbo.syslogins where name = 'patient')
-			create login patient with password = 'patient'
+			create login patient with password = 'Ptnt!Password123'
 
 		if not exists (select loginname from master.dbo.syslogins where name = 'dentist')
-			create login dentist with password = 'dentist'
+			create login dentist with password = 'Dntst!Password123'
 
 		if not exists (select loginname from master.dbo.syslogins where name = 'staff')
-			create login staff with password = 'staff'
+			create login staff with password = 'Stff!Password123'
 
 		if not exists (select loginname from master.dbo.syslogins where name = 'admin')
-			create login admin with password = 'admin'
+			create login admin with password = 'Admn!Password123'
 
 		create user guestUser for login guest
 		create user patientUser for login patient

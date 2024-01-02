@@ -9,6 +9,10 @@ export function formatPlural(number: number, singular: string, plural: string) {
 export function formatError(string: string) {
   console.error(string);
 
+  if (string.includes("CHECK constraint")) {
+    return string.split('".')[0].split('"')[1];
+  }
+
   if (string.includes("REFERENCE constraint")) {
     return "This item is currently in use.";
   }

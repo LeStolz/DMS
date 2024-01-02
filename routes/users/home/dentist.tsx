@@ -10,7 +10,7 @@ const DentistItem = ({ dentist }: { dentist: Dentist }) => {
         <a
           class="btn btn-primary w-100 rounded-top-0 rounded-bottom"
           href="#dates"
-          onclick={`document.getElementById('dentistSelect').value = ${2}`}
+          onclick={`document.getElementById('dentistSelect').value = '${dentist.id}'`}
         >
           <i class="bi bi-calendar"></i>
           Book Appointment

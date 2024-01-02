@@ -3,7 +3,14 @@ import * as elements from "typed-html";
 const Users = () => {
   return (
     <div class="max-w-xl container pt-4">
-      <h1>Patients</h1>
+      <div class="d-flex align-items-center">
+        <h1>Patients</h1>
+        <span
+          id="spinner"
+          class="ms-3 htmx-indicator spinner-border text-primary"
+          role="status"
+        />
+      </div>
       <form>
         <div class="input-group my-3">
           <input
@@ -16,6 +23,7 @@ const Users = () => {
             hx-swap="outerHTML"
             class="form-control"
             placeholder="0908531290"
+            hx-indicator="#spinner"
           />
           <button type="button" class="btn btn-primary">
             <i class="bi bi-search"></i>

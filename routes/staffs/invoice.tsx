@@ -82,26 +82,32 @@ const Invoice = ({
                   <td>{formatPrice(treatment.treatmentCharge)}</td>
                   <td>{formatPrice(treatment.treatmentCharge)}</td>
                 </tr>
-                {treatment.services.map(({ name, price }, idx) => (
-                  <tr class="align-middle">
-                    <td>{idx + 2}</td>
-                    <td>{name}</td>
-                    <td>1</td>
-                    <td>Time</td>
-                    <td>{formatPrice(price)}</td>
-                    <td>{formatPrice(price)}</td>
-                  </tr>
-                ))}
-                {treatment.drugs.map(({ name, quantity, unit, price }, idx) => (
-                  <tr class="align-middle">
-                    <td>{idx + treatment.services.length + 2}</td>
-                    <td>{name}</td>
-                    <td>{quantity}</td>
-                    <td>{formatPlural(quantity, unit!, `${unit}s`)}</td>
-                    <td>{formatPrice(price)}</td>
-                    <td>{formatPrice(quantity * price)}</td>
-                  </tr>
-                ))}
+                {treatment.services
+                  ? treatment.services.map(({ name, price }, idx) => (
+                      <tr class="align-middle">
+                        <td>{idx + 2}</td>
+                        <td>{name}</td>
+                        <td>1</td>
+                        <td>Time</td>
+                        <td>{formatPrice(price)}</td>
+                        <td>{formatPrice(price)}</td>
+                      </tr>
+                    ))
+                  : ""}
+                {treatment.drugs
+                  ? treatment.drugs.map(
+                      ({ name, quantity, unit, price }, idx) => (
+                        <tr class="align-middle">
+                          <td>{idx + treatment.services.length + 2}</td>
+                          <td>{name}</td>
+                          <td>{quantity}</td>
+                          <td>{formatPlural(quantity, unit!, `${unit}s`)}</td>
+                          <td>{formatPrice(price)}</td>
+                          <td>{formatPrice(quantity * price)}</td>
+                        </tr>
+                      )
+                    )
+                  : ""}
                 <tr class="align-middle">
                   <td></td>
                   <td>
@@ -114,14 +120,19 @@ const Invoice = ({
                     <b>
                       {formatPrice(
                         treatment.treatmentCharge +
-                          treatment.services.reduce(
-                            (sum, service) => (sum += service.price),
-                            0
-                          ) +
-                          treatment.drugs.reduce(
-                            (sum, drug) => (sum += drug.price * drug.quantity),
-                            0
-                          )
+                          (treatment.services
+                            ? treatment.services.reduce(
+                                (sum, service) => (sum += service.price),
+                                0
+                              )
+                            : 0) +
+                          (treatment.drugs
+                            ? treatment.drugs.reduce(
+                                (sum, drug) =>
+                                  (sum += drug.price * drug.quantity),
+                                0
+                              )
+                            : 0)
                       )}
                     </b>
                   </td>
@@ -143,14 +154,18 @@ const Invoice = ({
             <p class="lead text-muted m-0">
               {formatPrice(
                 treatment.treatmentCharge +
-                  treatment.services.reduce(
-                    (sum, service) => (sum += service.price),
-                    0
-                  ) +
-                  treatment.drugs.reduce(
-                    (sum, drug) => (sum += drug.price * drug.quantity),
-                    0
-                  )
+                  (treatment.services
+                    ? treatment.services.reduce(
+                        (sum, service) => (sum += service.price),
+                        0
+                      )
+                    : 0) +
+                  (treatment.drugs
+                    ? treatment.drugs.reduce(
+                        (sum, drug) => (sum += drug.price * drug.quantity),
+                        0
+                      )
+                    : 0)
               )}
             </p>
           </div>

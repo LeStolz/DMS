@@ -116,25 +116,19 @@ const Schedule = ({ date, schedules, appointments }: ScheduleProps) => {
                     type="hidden"
                     name="disabled"
                     value={
-                      appointments.find((appointment) => {
-                        if (
+                      (appointments.find(
+                        (appointment) =>
                           appointment.date.getTime() ===
                             weekday.date?.getTime() &&
                           appointment.shift === shift
-                        ) {
-                          return false;
-                        }
-
-                        if (
-                          appointment.date.getDay() === weekdayIdx &&
-                          appointment.shift === shift &&
-                          appointment.date.getTime() >= new Date().getTime()
-                        ) {
-                          return true;
-                        }
-
-                        return false;
-                      }) != null || weekday.date == null
+                      ) == null &&
+                        appointments.find(
+                          (appointment) =>
+                            appointment.date.getDay() === weekdayIdx &&
+                            appointment.shift === shift &&
+                            appointment.date.getTime() >= new Date().getTime()
+                        ) != null) ||
+                      weekday.date == null
                         ? "true"
                         : "false"
                     }
@@ -145,25 +139,19 @@ const Schedule = ({ date, schedules, appointments }: ScheduleProps) => {
                     name="date"
                     id={`${shift}-${weekday.day}`}
                     disabled={
-                      appointments.find((appointment) => {
-                        if (
+                      (appointments.find(
+                        (appointment) =>
                           appointment.date.getTime() ===
                             weekday.date?.getTime() &&
                           appointment.shift === shift
-                        ) {
-                          return false;
-                        }
-
-                        if (
-                          appointment.date.getDay() === weekdayIdx &&
-                          appointment.shift === shift &&
-                          appointment.date.getTime() >= new Date().getTime()
-                        ) {
-                          return true;
-                        }
-
-                        return false;
-                      }) != null || weekday.date == null
+                      ) == null &&
+                        appointments.find(
+                          (appointment) =>
+                            appointment.date.getDay() === weekdayIdx &&
+                            appointment.shift === shift &&
+                            appointment.date.getTime() >= new Date().getTime()
+                        ) != null) ||
+                      weekday.date == null
                     }
                     checked={
                       schedules.find(

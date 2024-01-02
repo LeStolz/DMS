@@ -39,7 +39,15 @@ dentistsRouter.post("/search", dentist, async (req, res) => {
     users = (
       await (await req.db()).input("phone", phone).execute("getPatientsByPhone")
     ).recordset;
-  } catch {}
+  } catch (error: any) {
+    return res.send(
+      <tbody id="user-search-result">
+        <tr class="text-center">
+          <td colspan={5}>No patient found</td>
+        </tr>
+      </tbody>
+    );
+  }
 
   return res.send(<SearchResult users={users} />);
 });
@@ -203,8 +211,9 @@ dentistsRouter.post("/addTreatment", dentist, async (req, res) => {
           quantity: quantity[idx],
         }))
       : [{ drugId, expirationDate, dosage, quantity }];
-    await (async () => {
-      for (let drug of drugIds) {
+
+    await Promise.all(
+      drugIds.map(async (drug) => {
         try {
           await (await req.db())
             .input("treatmentId", treatmentId)
@@ -224,8 +233,8 @@ dentistsRouter.post("/addTreatment", dentist, async (req, res) => {
             }
           }
         }
-      }
-    })();
+      })
+    );
 
     await (await req.db()).input("id", treatmentId).execute("saveTreatment");
 

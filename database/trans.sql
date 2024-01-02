@@ -72,6 +72,8 @@ begin tran
 			throw 51000, 'No patient found.', 1
 		end
 
+		waitfor delay '00:00:02'
+
 		select id, name, phone, gender, dob, address from patient
 		where phone like (cast(trim(@phone) as nvarchar(11)) + '%')
 	end try
@@ -150,7 +152,7 @@ begin tran
 			values (@name, @phone, @gender, @dob, @address)
 		end
 
-		select name, phone, gender, dob, address from patient where phone = @phone
+		select id, name, phone, gender, dob, address from patient where phone = @phone
 	end try
 	begin catch
 		throw
@@ -473,6 +475,8 @@ begin tran
 			throw 51000, 'Appointment must take place during the schedule of this dentist.', 1
 		end
 
+		waitfor delay '00:00:02'
+
 		insert into appointment values(@dentistId, @patientId, @shift, @date, 'pending')
 
 		select * from appointment
@@ -560,6 +564,7 @@ create or alter proc getPatientDetails(@id uniqueidentifier) as
 begin tran
 	set xact_abort on
 	set nocount on
+	set transaction isolation level read uncommitted
 
 	begin try
 		if @id is null
@@ -713,6 +718,8 @@ begin tran
 			throw 51000, 'No drug found.', 1
 		end
 
+		waitfor delay '00:00:04'
+
 		select id, name from drug
 		where name like (cast(trim(@name) as nvarchar(65)) + '%')
 	end try
@@ -738,6 +745,8 @@ begin tran
 		begin;
 			throw 51000, 'Drug does not exist.', 1
 		end
+
+		waitfor delay '00:00:02'
 
 		select
 			d.id, d.name, d.directive, d.price, d.unit,
@@ -854,6 +863,8 @@ begin tran
 
 		declare @oldPrice int = (select price from drug where id = @id)
 
+		waitfor delay '00:00:02'
+
 		update drug
 		set name = @name, directive = @directive, price = @price, unit = @unit
 		where id = @id
@@ -925,6 +936,8 @@ begin tran
 			throw 51000, 'Drug batch has already expired.', 1
 		end
 
+		waitfor delay '00:00:02'
+
 		insert into drugBatch(drugId, expirationDate, import, stock) values (@drugId, @exp, @import, @import)
 
 		select * from drugBatch where drugId = @drugId and expirationDate = @exp
@@ -971,6 +984,7 @@ create or alter proc createInvoice(@treatmentId uniqueidentifier) as
 begin tran
 	set xact_abort on
 	set nocount on
+	set transaction isolation level read uncommitted
 
 	begin try
 		if @treatmentId is null
@@ -1117,6 +1131,7 @@ create or alter proc addDrugToTreatment(
 begin tran
 	set xact_abort on
 	set nocount on
+	set transaction isolation level read uncommitted
 
 	begin try
 		if (@treatmentId is null or @drugId is null or @expirationDate is null or @dosage is null or @quantity is null)
@@ -1173,6 +1188,8 @@ begin tran
 			set prescriptionId = @presId
 			where id = @treatmentId
 		end
+
+		waitfor delay '00:00:02'
 
 		insert into prescribedDrug(prescriptionId, drugId, expirationDate, dosage, quantity) values
 			(@presId, @drugId, @expirationDate, @dosage, @quantity)

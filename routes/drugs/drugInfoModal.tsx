@@ -14,7 +14,14 @@ const DrugInfoModal = () => {
         <div class="modal-content">
           <div class="modal-header">
             <h4 class="modal-title" id="drugInfoModalModalLabel">
-              Drug Info
+              <div class="d-flex align-items-center">
+                Drug Info
+                <span
+                  id="drugInfoModalIndicator"
+                  class="ms-3 htmx-indicator spinner-border text-primary"
+                  role="status"
+                />
+              </div>
             </h4>
             <div class="d-flex align-items-center gap-3">
               <button

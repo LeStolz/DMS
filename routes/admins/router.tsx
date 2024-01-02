@@ -38,8 +38,6 @@ adminsRouter.post("/toggleLock", admin, async (req, res) => {
 });
 
 adminsRouter.post("/addUser", admin, async (req, res) => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
   try {
     const { phone, password, name, role, gender } = req.body;
 
