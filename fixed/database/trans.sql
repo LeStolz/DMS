@@ -479,7 +479,7 @@ begin tran
 		end
 
 		if not exists (
-			select * from dentistSchedule
+			select * from dentistSchedule with(tablock, xlock)
 			where dentistId = @dentistId and shift = @shift and date = datepart(dw, @date)
 		)
 		begin;
